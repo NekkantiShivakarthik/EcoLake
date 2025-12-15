@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { StatusChip } from '@/components/ui/chip';
 import { EcoColors } from '@/constants/colors';
 import { useAuth } from '@/contexts/auth-context';
+import { useTheme } from '@/contexts/theme-context';
 import { supabase } from '@/lib/supabase';
 import { decode } from 'base64-arraybuffer';
 import * as ImagePicker from 'expo-image-picker';
@@ -39,6 +40,7 @@ interface Report {
 
 export default function VolunteerWorkScreen() {
   const { user } = useAuth();
+  const { colors } = useTheme();
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -208,7 +210,7 @@ export default function VolunteerWorkScreen() {
 
   if (loading) {
     return (
-      <View style={styles.centerContainer}>
+      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" color={EcoColors.primary} />
       </View>
     );
@@ -216,8 +218,8 @@ export default function VolunteerWorkScreen() {
 
   if (selectedReport) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <ScrollView style={styles.scrollView}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+        <ScrollView style={[styles.scrollView, { backgroundColor: colors.background }]}>
           <View style={styles.header}>
             <TouchableOpacity
               onPress={() => {
@@ -397,10 +399,10 @@ export default function VolunteerWorkScreen() {
   const myReports = reports.filter(r => r.assigned_cleaner_id === user?.id);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Volunteer Work</Text>
-        <Text style={styles.headerSubtitle}>Claim reports and earn points! 🌟</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Volunteer Work</Text>
+        <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>Claim reports and earn points! 🌟</Text>
       </View>
 
       <ScrollView
@@ -462,7 +464,7 @@ export default function VolunteerWorkScreen() {
         {/* My Active Work */}
         {myReports.length > 0 && (
           <>
-            <Text style={styles.sectionHeader}>My Active Work</Text>
+            <Text style={[styles.sectionHeader, { color: colors.text }]}>My Active Work</Text>
             {myReports.map(report => (
               <ReportCard
                 key={report.id}
@@ -475,11 +477,11 @@ export default function VolunteerWorkScreen() {
         )}
 
         {/* Available Reports */}
-        <Text style={styles.sectionHeader}>Available Reports</Text>
+        <Text style={[styles.sectionHeader, { color: colors.text }]}>Available Reports</Text>
         {availableReports.length === 0 ? (
           <Card style={styles.card}>
-            <Text style={styles.emptyText}>No reports available right now</Text>
-            <Text style={styles.emptySubtext}>Check back later for new cleanup opportunities!</Text>
+            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No reports available right now</Text>
+            <Text style={[styles.emptySubtext, { color: colors.textTertiary }]}>Check back later for new cleanup opportunities!</Text>
           </Card>
         ) : (
           availableReports.map(report => (
@@ -503,6 +505,8 @@ interface ReportCardProps {
 }
 
 function ReportCard({ report, onPress, buttonTitle }: ReportCardProps) {
+  const { colors } = useTheme();
+  
   return (
     <Card style={styles.reportCard}>
       <View style={styles.reportHeader}>
@@ -514,12 +518,12 @@ function ReportCard({ report, onPress, buttonTitle }: ReportCardProps) {
         <Image source={{ uri: report.photos[0] }} style={styles.reportImage} />
       )}
 
-      <Text style={styles.reportDescription} numberOfLines={2}>
+      <Text style={[styles.reportDescription, { color: colors.textSecondary }]} numberOfLines={2}>
         {report.description}
       </Text>
 
       <View style={styles.reportInfo}>
-        <Text style={styles.reportCategory}>📍 {report.lake_name || 'Unknown Location'}</Text>
+        <Text style={[styles.reportCategory, { color: colors.textSecondary }]}>📍 {report.lake_name || 'Unknown Location'}</Text>
         <Text style={styles.reportSeverity}>{'⭐'.repeat(report.severity || 1)}</Text>
       </View>
 

@@ -1,17 +1,22 @@
 import { CategoryIcons, EcoColors, getSeverityColor } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 import { Lake, Report, User } from '@/types/database';
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Card } from './card';
 import { StatusChip } from './chip';
 
 interface ReportCardProps {
   report: Report & { lake?: Lake | null; user?: User | null };
   onPress?: () => void;
+  onDelete?: (reportId: string) => void;
+  showDelete?: boolean;
 }
 
-export function ReportCard({ report, onPress }: ReportCardProps) {
+export function ReportCard({ report, onPress, onDelete, showDelete = true }: ReportCardProps) {
+  const { colors } = useTheme();
   const severityColor = getSeverityColor(report.severity || 1);
   const categoryIcon = CategoryIcons[report.category || 'other'];
   const hasPhotos = report.photos && report.photos.length > 0;
@@ -33,7 +38,7 @@ export function ReportCard({ report, onPress }: ReportCardProps) {
       <Card variant="elevated" style={styles.card}>
         {/* Photo Preview */}
         {hasPhotos && (
-          <View style={styles.photoContainer}>
+          <View style={[styles.photoContainer, { backgroundColor: colors.surface }]}>
             <Image
               source={{ uri: report.photos![0] }}
               style={styles.photo}
@@ -49,28 +54,51 @@ export function ReportCard({ report, onPress }: ReportCardProps) {
 
         <View style={styles.content}>
           <View style={styles.header}>
-            <View style={styles.categoryBadge}>
+            <View style={[styles.categoryBadge, { backgroundColor: colors.surface }]}>
               <Text style={styles.categoryIcon}>{categoryIcon}</Text>
-              <Text style={styles.categoryText}>{report.category || 'Other'}</Text>
+              <Text style={[styles.categoryText, { color: colors.textSecondary }]}>{report.category || 'Other'}</Text>
             </View>
-            <StatusChip status={report.status || 'submitted'} size="sm" />
+            <View style={styles.headerRight}>
+              <StatusChip status={report.status || 'submitted'} size="sm" />
+              {showDelete && onDelete && (
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={() => {
+                    Alert.alert(
+                      'Delete Report',
+                      'Are you sure you want to delete this report? This action cannot be undone.',
+                      [
+                        { text: 'Cancel', style: 'cancel' },
+                        {
+                          text: 'Delete',
+                          style: 'destructive',
+                          onPress: () => onDelete(report.id),
+                        },
+                      ]
+                    );
+                  }}
+                >
+                  <Ionicons name="trash-outline" size={18} color={EcoColors.error} />
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
 
-          <Text style={styles.description} numberOfLines={2}>
+          <Text style={[styles.description, { color: colors.text }]} numberOfLines={2}>
             {report.description || 'No description provided'}
           </Text>
 
           {(report.lake || report.lake_name) && (
-            <View style={styles.locationRow}>
+            <View style={[styles.locationRow, { backgroundColor: colors.surface }]}>
               <Text style={styles.locationIcon}>📍</Text>
-              <Text style={styles.locationText}>{report.lake?.name || report.lake_name}</Text>
+              <Text style={[styles.locationText, { color: colors.textSecondary }]}>{report.lake?.name || report.lake_name}</Text>
             </View>
           )}
 
           <View style={styles.footer}>
             <View style={styles.severityContainer}>
-              <Text style={styles.severityLabel}>Severity</Text>
-              <View style={styles.severityBar}>
+              <Text style={[styles.severityLabel, { color: colors.textTertiary }]}>Severity</Text>
+              <View style={[styles.severityBar, { backgroundColor: colors.surface }]}>
                 <View
                   style={[
                     styles.severityFill,
@@ -82,7 +110,7 @@ export function ReportCard({ report, onPress }: ReportCardProps) {
                 />
               </View>
             </View>
-            <Text style={styles.dateText}>{formatDate(report.created_at)}</Text>
+            <Text style={[styles.dateText, { color: colors.textTertiary }]}>{formatDate(report.created_at)}</Text>
           </View>
         </View>
       </Card>
@@ -100,7 +128,6 @@ const styles = StyleSheet.create({
   photoContainer: {
     position: 'relative',
     height: 160,
-    backgroundColor: EcoColors.gray200,
   },
   photo: {
     width: '100%',
@@ -129,10 +156,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  deleteButton: {
+    padding: 6,
+    borderRadius: 8,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+  },
   categoryBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: EcoColors.gray100,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 20,
@@ -144,7 +180,6 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: 12,
     fontWeight: '600',
-    color: EcoColors.gray700,
     textTransform: 'capitalize',
   },
   statusBadge: {
@@ -160,7 +195,6 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 15,
-    color: EcoColors.gray800,
     lineHeight: 22,
     marginBottom: 12,
   },
@@ -169,7 +203,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     marginBottom: 12,
-    backgroundColor: EcoColors.gray50,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 10,
@@ -179,7 +212,6 @@ const styles = StyleSheet.create({
   },
   locationText: {
     fontSize: 13,
-    color: EcoColors.gray600,
     fontWeight: '500',
   },
   footer: {
@@ -193,13 +225,11 @@ const styles = StyleSheet.create({
   },
   severityLabel: {
     fontSize: 11,
-    color: EcoColors.gray500,
     marginBottom: 4,
     fontWeight: '500',
   },
   severityBar: {
     height: 6,
-    backgroundColor: EcoColors.gray200,
     borderRadius: 3,
     overflow: 'hidden',
   },
@@ -218,7 +248,6 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: 12,
-    color: EcoColors.gray400,
     fontWeight: '500',
   },
 });

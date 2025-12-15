@@ -3,6 +3,7 @@ import React from 'react';
 import { StyleSheet, Text, View, ViewStyle } from 'react-native';
 
 import { EcoColors } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 
 interface AvatarProps {
   source?: string;
@@ -41,6 +42,7 @@ export function Avatar({
   badgeColor = EcoColors.success,
   style,
 }: AvatarProps) {
+  const { colors } = useTheme();
   const dimensions = typeof size === 'number' ? size : sizeMap[size];
   const fontSize = typeof size === 'number' ? size * 0.35 : fontSizeMap[size];
   const badgeSize = dimensions * 0.3;
@@ -73,7 +75,7 @@ export function Avatar({
         </View>
       )}
       {badge && (
-        <View style={[styles.badgeContainer, { right: -2, bottom: -2 }]}>
+        <View style={[styles.badgeContainer, { right: -2, bottom: -2, backgroundColor: colors.surface }]}>
           <Text style={styles.badgeText}>{badge}</Text>
         </View>
       )}
@@ -86,6 +88,7 @@ export function Avatar({
               height: badgeSize,
               borderRadius: badgeSize / 2,
               backgroundColor: badgeColor,
+              borderColor: colors.surface,
               right: 0,
               bottom: 0,
             },
@@ -103,6 +106,7 @@ interface AvatarGroupProps {
 }
 
 export function AvatarGroup({ avatars, max = 4, size = 'sm' }: AvatarGroupProps) {
+  const { colors } = useTheme();
   const dimensions = sizeMap[size];
   const visibleAvatars = avatars.slice(0, max);
   const remaining = avatars.length - max;
@@ -114,7 +118,7 @@ export function AvatarGroup({ avatars, max = 4, size = 'sm' }: AvatarGroupProps)
           key={index}
           style={[
             styles.groupItem,
-            { marginLeft: index > 0 ? -dimensions * 0.3 : 0, zIndex: max - index },
+            { marginLeft: index > 0 ? -dimensions * 0.3 : 0, zIndex: max - index, borderColor: colors.surface },
           ]}
         >
           <Avatar source={avatar.source} name={avatar.name} size={size} />
@@ -130,10 +134,12 @@ export function AvatarGroup({ avatars, max = 4, size = 'sm' }: AvatarGroupProps)
               height: dimensions,
               borderRadius: dimensions / 2,
               marginLeft: -dimensions * 0.3,
+              borderColor: colors.surface,
+              backgroundColor: colors.inputBackground,
             },
           ]}
         >
-          <Text style={styles.remainingText}>+{remaining}</Text>
+          <Text style={[styles.remainingText, { color: colors.textSecondary }]}>+{remaining}</Text>
         </View>
       )}
     </View>

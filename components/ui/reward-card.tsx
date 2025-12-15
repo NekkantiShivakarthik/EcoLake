@@ -5,6 +5,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { EcoColors } from '@/constants/colors';
 import { BrandColors, CategoryGradients, getRewardLogo } from '@/constants/reward-logos';
+import { useTheme } from '@/contexts/theme-context';
 
 interface RewardCardProps {
   reward: {
@@ -22,6 +23,7 @@ interface RewardCardProps {
 }
 
 export function RewardCard({ reward, userPoints, onRedeem }: RewardCardProps) {
+  const { colors } = useTheme();
   const canAfford = userPoints >= reward.points_required;
   const inStock = reward.stock_available > 0;
   const isAvailable = canAfford && inStock;
@@ -62,7 +64,7 @@ export function RewardCard({ reward, userPoints, onRedeem }: RewardCardProps) {
   const isGiftCard = reward.category === 'gift_card';
 
   return (
-    <View style={[styles.card, !isAvailable && styles.cardDisabled]}>
+    <View style={[styles.card, { backgroundColor: colors.cardBackground, borderColor: colors.border }, !isAvailable && styles.cardDisabled]}>
       {/* Gift Card Template or Regular Image */}
       {isGiftCard ? (
         <View style={styles.giftCardContainer}>
@@ -134,11 +136,11 @@ export function RewardCard({ reward, userPoints, onRedeem }: RewardCardProps) {
 
       {/* Content */}
       <View style={styles.content}>
-        <Text style={styles.name} numberOfLines={2}>
+        <Text style={[styles.name, { color: colors.text }]} numberOfLines={2}>
           {reward.name}
         </Text>
         {reward.description && (
-          <Text style={styles.description} numberOfLines={2}>
+          <Text style={[styles.description, { color: colors.textSecondary }]} numberOfLines={2}>
             {reward.description}
           </Text>
         )}
@@ -147,7 +149,7 @@ export function RewardCard({ reward, userPoints, onRedeem }: RewardCardProps) {
         {reward.value && (
           <View style={styles.valueContainer}>
             <View style={styles.valueRow}>
-              <Text style={styles.valueLabel}>Worth:</Text>
+              <Text style={[styles.valueLabel, { color: colors.textTertiary }]}>Worth:</Text>
               <Text style={styles.valueAmount}>₹{Math.round(reward.value).toLocaleString('en-IN')}</Text>
             </View>
             {reward.category === 'gift_card' && (

@@ -1,4 +1,5 @@
 import { EcoColors } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 import { User } from '@/types/database';
 import { Image } from 'expo-image';
 import React from 'react';
@@ -12,6 +13,8 @@ interface LeaderboardItemProps {
 }
 
 export function LeaderboardItem({ rank, user, points }: LeaderboardItemProps) {
+  const { colors } = useTheme();
+  
   const getMedalEmoji = (rank: number) => {
     switch (rank) {
       case 1: return '🥇';
@@ -28,30 +31,30 @@ export function LeaderboardItem({ rank, user, points }: LeaderboardItemProps) {
       variant={rank <= 3 ? 'elevated' : 'outlined'} 
       style={[styles.card, rank <= 3 && styles.topThree]}
     >
-      <View style={styles.rankContainer}>
+      <View style={[styles.rankContainer, { backgroundColor: rank <= 3 ? colors.surface : 'transparent' }]}>
         {medal ? (
           <Text style={styles.medal}>{medal}</Text>
         ) : (
-          <Text style={styles.rank}>#{rank}</Text>
+          <Text style={[styles.rank, { color: colors.textTertiary }]}>#{rank}</Text>
         )}
       </View>
 
       <Image
         source={user.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'}
-        style={styles.avatar}
+        style={[styles.avatar, { backgroundColor: colors.surface }]}
         contentFit="cover"
       />
 
       <View style={styles.userInfo}>
-        <Text style={styles.name}>{user.name || 'Anonymous'}</Text>
-        <View style={styles.roleContainer}>
-          <Text style={styles.role}>{user.role}</Text>
+        <Text style={[styles.name, { color: colors.text }]}>{user.name || 'Anonymous'}</Text>
+        <View style={[styles.roleContainer, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.role, { color: colors.textSecondary }]}>{user.role}</Text>
         </View>
       </View>
 
       <View style={styles.pointsContainer}>
-        <Text style={styles.points}>{points}</Text>
-        <Text style={styles.pointsLabel}>pts</Text>
+        <Text style={[styles.points, { color: colors.primary }]}>{points.toLocaleString()}</Text>
+        <Text style={[styles.pointsLabel, { color: colors.textTertiary }]}>points</Text>
       </View>
     </Card>
   );
@@ -63,58 +66,62 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 16,
     marginVertical: 6,
-    padding: 12,
+    padding: 14,
   },
   topThree: {
-    borderLeftWidth: 3,
+    borderLeftWidth: 4,
     borderLeftColor: EcoColors.accent,
   },
   rankContainer: {
-    width: 36,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   medal: {
-    fontSize: 24,
+    fontSize: 26,
   },
   rank: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: EcoColors.gray500,
+    fontSize: 15,
+    fontWeight: '700',
   },
   avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: EcoColors.gray200,
-    marginLeft: 8,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginLeft: 10,
   },
   userInfo: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 14,
   },
   name: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
-    color: EcoColors.gray800,
+    marginBottom: 4,
   },
   roleContainer: {
-    marginTop: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
   },
   role: {
-    fontSize: 12,
-    color: EcoColors.gray500,
+    fontSize: 11,
+    fontWeight: '500',
     textTransform: 'capitalize',
   },
   pointsContainer: {
     alignItems: 'flex-end',
   },
   points: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
-    color: EcoColors.primary,
   },
   pointsLabel: {
     fontSize: 11,
-    color: EcoColors.gray400,
+    fontWeight: '500',
+    marginTop: 2,
   },
 });

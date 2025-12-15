@@ -2,16 +2,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  Modal,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    Modal,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -49,7 +49,7 @@ interface Volunteer {
 
 export default function ManageScreen() {
   const { user } = useAuth();
-  const { theme, actualTheme, setTheme } = useTheme();
+  const { theme, actualTheme, setTheme, colors } = useTheme();
   const [reports, setReports] = useState<Report[]>([]);
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -178,7 +178,7 @@ export default function ManageScreen() {
   // Check if user is admin
   if (user?.role !== 'ngo_admin') {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.centerContainer}>
           <Text style={styles.noAccessText}>⚠️</Text>
           <Text style={styles.noAccessTitle}>Access Denied</Text>
@@ -189,7 +189,7 @@ export default function ManageScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       {/* Gradient Header */}
       <LinearGradient
         colors={[EcoColors.primary, EcoColors.primaryDark]}

@@ -1,4 +1,5 @@
 import { EcoColors } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
@@ -14,6 +15,8 @@ interface StatCardProps {
 }
 
 export function StatCard({ title, value, icon, color = EcoColors.primary, subtitle, trend }: StatCardProps) {
+  const { colors } = useTheme();
+  
   return (
     <Card variant="elevated" style={styles.card}>
       <View style={styles.header}>
@@ -31,8 +34,8 @@ export function StatCard({ title, value, icon, color = EcoColors.primary, subtit
       <Animated.Text entering={FadeIn.delay(200)} style={[styles.value, { color }]}>
         {typeof value === 'number' ? value.toLocaleString() : value}
       </Animated.Text>
-      <Text style={styles.title}>{title}</Text>
-      {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+      <Text style={[styles.title, { color: colors.textSecondary }]}>{title}</Text>
+      {subtitle && <Text style={[styles.subtitle, { color: colors.textTertiary }]}>{subtitle}</Text>}
     </Card>
   );
 }
@@ -87,12 +90,10 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 13,
-    color: EcoColors.gray500,
     fontWeight: '500',
   },
   subtitle: {
     fontSize: 11,
-    color: EcoColors.gray400,
     marginTop: 2,
   },
 });

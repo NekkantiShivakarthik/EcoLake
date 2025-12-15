@@ -2,17 +2,17 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  ActionSheetIOS,
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActionSheetIOS,
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EcoColors } from '@/constants/colors';
 import { useAuth } from '@/contexts/auth-context';
+import { useTheme } from '@/contexts/theme-context';
 import { useImagePicker, useLocation, usePhotoUpload } from '@/hooks/use-media';
 import { useNearbyLakes, useSubmitReport } from '@/hooks/use-supabase';
 
@@ -36,6 +37,7 @@ const categories: { key: Category; label: string; icon: string }[] = [
 
 export default function ReportScreen() {
   const { user } = useAuth();
+  const { colors } = useTheme();
   const { location, address, loading: locationLoading, getCurrentLocation, clearLocation } = useLocation();
   const { lakes: nearbyLakes, loading: lakesLoading } = useNearbyLakes(location, 5); // Search lakes within 5km
   const { submitReport, loading: submitting } = useSubmitReport();
@@ -162,7 +164,7 @@ export default function ReportScreen() {
   const isSubmitting = submitting || uploading;
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}

@@ -3,6 +3,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { EcoColors } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 
 interface ActivityItemProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -21,6 +22,8 @@ export function ActivityItem({
   points,
   status = 'success',
 }: ActivityItemProps) {
+  const { colors } = useTheme();
+  
   const statusColors = {
     success: EcoColors.success,
     pending: EcoColors.warning,
@@ -33,12 +36,12 @@ export function ActivityItem({
         <View style={[styles.iconContainer, { backgroundColor: statusColors[status] + '20' }]}>
           <Ionicons name={icon} size={20} color={statusColors[status]} />
         </View>
-        <View style={styles.line} />
+        <View style={[styles.line, { backgroundColor: colors.border }]} />
       </View>
 
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.title}>{title}</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
           {points !== undefined && (
             <View style={styles.pointsBadge}>
               <Ionicons name="star" size={12} color={EcoColors.accent} />
@@ -46,8 +49,8 @@ export function ActivityItem({
             </View>
           )}
         </View>
-        <Text style={styles.description}>{description}</Text>
-        <Text style={styles.time}>{time}</Text>
+        <Text style={[styles.description, { color: colors.textSecondary }]}>{description}</Text>
+        <Text style={[styles.time, { color: colors.textTertiary }]}>{time}</Text>
       </View>
     </View>
   );
@@ -74,7 +77,6 @@ const styles = StyleSheet.create({
   line: {
     width: 2,
     flex: 1,
-    backgroundColor: EcoColors.gray300,
     minHeight: 20,
   },
   content: {
@@ -90,7 +92,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '600',
-    color: EcoColors.gray800,
     flex: 1,
   },
   pointsBadge: {
@@ -109,11 +110,10 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 14,
-    color: EcoColors.gray600,
     marginBottom: 4,
+    lineHeight: 20,
   },
   time: {
     fontSize: 12,
-    color: EcoColors.gray500,
   },
 });
