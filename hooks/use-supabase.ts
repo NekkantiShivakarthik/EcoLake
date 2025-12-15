@@ -69,7 +69,32 @@ export function useReports(filterStatus?: string) {
     };
   }, [fetchReports]);
 
-  return { reports, loading, error, refetch: fetchReports };
+  const deleteReport = useCallback(async (reportId: string) => {
+    try {
+      console.log('Attempting to delete report:', reportId);
+      const { error, data, count } = await supabase
+        .from('reports')
+        .delete()
+        .eq('id', reportId)
+        .select();
+
+      console.log('Delete response:', { error, data, count });
+      
+      if (error) {
+        console.error('Supabase delete error:', error);
+        throw error;
+      }
+      
+      // Refresh the reports list
+      await fetchReports();
+      return { success: true };
+    } catch (err) {
+      console.error('Failed to delete report:', err);
+      return { success: false, error: err instanceof Error ? err.message : 'Failed to delete report' };
+    }
+  }, [fetchReports]);
+
+  return { reports, loading, error, refetch: fetchReports, deleteReport };
 }
 
 // Cache for lake search results

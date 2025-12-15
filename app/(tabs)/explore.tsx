@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import {
+    Alert,
     Animated,
     FlatList,
     RefreshControl,
@@ -31,8 +32,8 @@ const filters: { key: FilterType; label: string; icon: string }[] = [
 ];
 
 export default function ExploreScreen() {
-  const { reports, loading, error, refetch } = useReports();
-  const { actualTheme, setTheme } = useTheme();
+  const { reports, loading, error, refetch, deleteReport } = useReports();
+  const { actualTheme, setTheme, colors } = useTheme();
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
@@ -41,6 +42,15 @@ export default function ExploreScreen() {
     setRefreshing(true);
     await refetch();
     setRefreshing(false);
+  };
+
+  const handleDeleteReport = async (reportId: string) => {
+    const result = await deleteReport(reportId);
+    if (result.success) {
+      Alert.alert('Success', 'Report deleted successfully');
+    } else {
+      Alert.alert('Error', result.error || 'Failed to delete report');
+    }
   };
 
   const filteredReports = reports.filter((report) => {
@@ -55,7 +65,7 @@ export default function ExploreScreen() {
   });
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       {/* Gradient Header */}
       <LinearGradient
         colors={[EcoColors.primary, EcoColors.primaryDark]}
@@ -81,18 +91,18 @@ export default function ExploreScreen() {
         </View>
 
         {/* Search Bar */}
-        <View style={styles.searchContainer}>
-          <Ionicons name="search" size={20} color={EcoColors.gray400} style={styles.searchIcon} />
+        <View style={[styles.searchContainer, { backgroundColor: colors.cardBackground }]}>
+          <Ionicons name="search" size={20} color={colors.textTertiary} style={styles.searchIcon} />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: colors.text }]}
             placeholder="Search by lake, category, or description..."
-            placeholderTextColor={EcoColors.gray400}
+            placeholderTextColor={colors.textTertiary}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
           {searchQuery !== '' && (
             <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearButton}>
-              <Ionicons name="close-circle" size={20} color={EcoColors.gray400} />
+              <Ionicons name="close-circle" size={20} color={colors.textTertiary} />
             </TouchableOpacity>
           )}
         </View>
@@ -110,6 +120,7 @@ export default function ExploreScreen() {
             <TouchableOpacity
               style={[
                 styles.filterChip,
+                { backgroundColor: colors.cardBackground, borderColor: colors.border },
                 activeFilter === item.key && styles.filterChipActive,
               ]}
               onPress={() => setActiveFilter(item.key)}
@@ -117,11 +128,12 @@ export default function ExploreScreen() {
               <Ionicons
                 name={item.icon as any}
                 size={16}
-                color={activeFilter === item.key ? EcoColors.white : EcoColors.gray600}
+                color={activeFilter === item.key ? EcoColors.white : colors.textSecondary}
               />
               <Text
                 style={[
                   styles.filterChipText,
+                  { color: colors.textSecondary },
                   activeFilter === item.key && styles.filterChipTextActive,
                 ]}
               >
@@ -134,7 +146,7 @@ export default function ExploreScreen() {
 
       {/* Results Count */}
       <View style={styles.resultsHeader}>
-        <Text style={styles.resultsText}>
+        <Text style={[styles.resultsText, { color: colors.textSecondary }]}>
           {filteredReports.length} {filteredReports.length === 1 ? 'result' : 'results'}
         </Text>
       </View>
@@ -163,7 +175,7 @@ export default function ExploreScreen() {
                 transform: [{ translateY: 0 }],
               }}
             >
-              <ReportCard report={item} />
+              <ReportCard report={item} onDelete={handleDeleteReport} />
             </Animated.View>
           )}
           showsVerticalScrollIndicator={false}

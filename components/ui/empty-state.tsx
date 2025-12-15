@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View, ViewStyle } from 'react-native';
 
 import { EcoColors } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 
 interface EmptyStateProps {
   icon?: string;
@@ -12,11 +13,15 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({ icon = '📭', title, description, action, style }: EmptyStateProps) {
+  const { colors } = useTheme();
+  
   return (
     <View style={[styles.container, style]}>
-      <Text style={styles.icon}>{icon}</Text>
-      <Text style={styles.title}>{title}</Text>
-      {description && <Text style={styles.description}>{description}</Text>}
+      <View style={[styles.iconContainer, { backgroundColor: colors.surface }]}>
+        <Text style={styles.icon}>{icon}</Text>
+      </View>
+      <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+      {description && <Text style={[styles.description, { color: colors.textSecondary }]}>{description}</Text>}
       {action && <View style={styles.action}>{action}</View>}
     </View>
   );
@@ -91,20 +96,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 32,
   },
+  iconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
   icon: {
-    fontSize: 64,
-    marginBottom: 16,
+    fontSize: 48,
   },
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: EcoColors.gray800,
     textAlign: 'center',
     marginBottom: 8,
   },
   description: {
     fontSize: 14,
-    color: EcoColors.gray500,
     textAlign: 'center',
     lineHeight: 20,
     maxWidth: 280,

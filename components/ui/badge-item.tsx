@@ -1,4 +1,5 @@
 import { EcoColors } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 import { Badge } from '@/types/database';
 import { Image } from 'expo-image';
 import React from 'react';
@@ -11,20 +12,22 @@ interface BadgeItemProps {
 }
 
 export function BadgeItem({ badge, earned = true, awardedAt }: BadgeItemProps) {
+  const { colors } = useTheme();
+  
   return (
     <View style={[styles.container, !earned && styles.unearned]}>
-      <View style={[styles.iconContainer, earned && styles.earnedIcon]}>
+      <View style={[styles.iconContainer, { backgroundColor: colors.inputBackground }, earned && styles.earnedIcon]}>
         {badge.icon_url ? (
           <Image source={badge.icon_url} style={styles.icon} contentFit="cover" />
         ) : (
           <Text style={styles.defaultIcon}>🏆</Text>
         )}
       </View>
-      <Text style={[styles.name, !earned && styles.unearnedText]} numberOfLines={1}>
+      <Text style={[styles.name, { color: colors.text }, !earned && { color: colors.textTertiary }]} numberOfLines={1}>
         {badge.name}
       </Text>
       {earned && awardedAt && (
-        <Text style={styles.date}>
+        <Text style={[styles.date, { color: colors.textTertiary }]}>
           {new Date(awardedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
         </Text>
       )}

@@ -3,6 +3,7 @@ import React from 'react';
 import { StyleSheet, Text, TextInput, TextInputProps, TouchableOpacity, View } from 'react-native';
 
 import { EcoColors } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -24,30 +25,31 @@ export function Input({
   ...props
 }: InputProps) {
   const [isFocused, setIsFocused] = React.useState(false);
+  const { colors } = useTheme();
 
   const containerStyle = [
     styles.container,
-    variant === 'filled' && styles.containerFilled,
-    variant === 'outlined' && styles.containerOutlined,
-    isFocused && styles.containerFocused,
+    variant === 'filled' && { backgroundColor: colors.inputBackground },
+    variant === 'outlined' && { backgroundColor: colors.cardBackground, borderWidth: 1.5, borderColor: colors.border },
+    isFocused && { borderColor: colors.primary, borderWidth: 2 },
     error && styles.containerError,
   ];
 
   return (
     <View style={styles.wrapper}>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {label && <Text style={[styles.label, { color: colors.text }]}>{label}</Text>}
       <View style={containerStyle}>
         {leftIcon && (
           <Ionicons
             name={leftIcon}
             size={20}
-            color={isFocused ? EcoColors.primary : EcoColors.gray400}
+            color={isFocused ? colors.primary : colors.textTertiary}
             style={styles.leftIcon}
           />
         )}
         <TextInput
-          style={[styles.input, style]}
-          placeholderTextColor={EcoColors.gray400}
+          style={[styles.input, { color: colors.text }, style]}
+          placeholderTextColor={colors.textTertiary}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           {...props}
@@ -57,7 +59,7 @@ export function Input({
             <Ionicons
               name={rightIcon}
               size={20}
-              color={EcoColors.gray400}
+              color={colors.textTertiary}
             />
           </TouchableOpacity>
         )}
@@ -74,7 +76,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: EcoColors.gray700,
     marginBottom: 8,
   },
   container: {
@@ -83,18 +84,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     height: 52,
-  },
-  containerFilled: {
-    backgroundColor: EcoColors.gray100,
-  },
-  containerOutlined: {
-    backgroundColor: EcoColors.white,
-    borderWidth: 1.5,
-    borderColor: EcoColors.gray200,
-  },
-  containerFocused: {
-    borderColor: EcoColors.primary,
-    borderWidth: 2,
   },
   containerError: {
     borderColor: EcoColors.error,
@@ -109,7 +98,6 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    color: EcoColors.gray800,
   },
   error: {
     fontSize: 12,

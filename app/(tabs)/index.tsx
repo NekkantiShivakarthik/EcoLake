@@ -25,7 +25,7 @@ import { useReports, useStats, useUserProfile } from '@/hooks/use-supabase';
 
 export default function HomeScreen() {
   const { user: authUser } = useAuth();
-  const { theme, actualTheme, setTheme } = useTheme();
+  const { theme, actualTheme, setTheme, colors } = useTheme();
   const { stats, loading: statsLoading } = useStats(authUser?.id);
   const { reports, loading: reportsLoading, refetch } = useReports();
   const { user, points } = useUserProfile(authUser?.id);
@@ -41,9 +41,9 @@ export default function HomeScreen() {
   const recentReports = reports.slice(0, 5);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       <ScrollView
-        style={styles.scrollView}
+        style={[styles.scrollView, { backgroundColor: colors.background }]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={EcoColors.primary} />
@@ -52,24 +52,24 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <Text style={styles.greeting}>Welcome back,</Text>
-            <Text style={styles.userName}>{user?.name || 'Eco Hero'} 👋</Text>
+            <Text style={[styles.greeting, { color: colors.textSecondary }]}>Welcome back,</Text>
+            <Text style={[styles.userName, { color: colors.text }]}>{user?.name || 'Eco Hero'} 👋</Text>
           </View>
           <View style={styles.headerRight}>
             <TouchableOpacity
-              style={styles.themeToggle}
+              style={[styles.themeToggle, { backgroundColor: colors.surface }]}
               onPress={() => setTheme(actualTheme === 'dark' ? 'light' : 'dark')}
             >
               <Ionicons
                 name={actualTheme === 'dark' ? 'sunny' : 'moon'}
                 size={24}
-                color={EcoColors.gray700}
+                color={colors.textSecondary}
               />
             </TouchableOpacity>
             <Link href="/(tabs)/redeem" asChild>
               <TouchableOpacity style={styles.pointsBadge}>
                 <Text style={styles.pointsIcon}>⭐</Text>
-                <Text style={styles.pointsText}>{points}</Text>
+                <Text style={[styles.pointsText, { color: colors.text }]}>{points}</Text>
               </TouchableOpacity>
             </Link>
             <Avatar
@@ -150,7 +150,7 @@ export default function HomeScreen() {
         {/* Recent Reports Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Reports</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Recent Reports</Text>
             <Link href="/(tabs)/explore" asChild>
               <TouchableOpacity>
                 <Text style={styles.seeAllText}>View All</Text>

@@ -22,7 +22,7 @@ import { useBadges, useReports, useUserProfile } from '@/hooks/use-supabase';
 
 export default function ProfileScreen() {
   const { user: authUser, signOut } = useAuth();
-  const { theme, actualTheme, setTheme } = useTheme();
+  const { theme, actualTheme, setTheme, colors } = useTheme();
   const { user, badges: earnedBadges, points, loading } = useUserProfile(authUser?.id);
   const { badges: allBadges } = useBadges();
   const { reports } = useReports();
@@ -74,8 +74,8 @@ export default function ProfileScreen() {
   const pointsToNextLevel = 500 - (totalPoints % 500);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+      <ScrollView showsVerticalScrollIndicator={false} style={{ backgroundColor: colors.background }}>
         {/* Gradient Header */}
         <LinearGradient
           colors={[EcoColors.primary, EcoColors.primaryDark]}
@@ -121,13 +121,13 @@ export default function ProfileScreen() {
           <View style={styles.levelHeader}>
             <View style={styles.levelBadge}>
               <Ionicons name="ribbon" size={20} color={EcoColors.accent} />
-              <Text style={styles.levelText}>Level {currentLevel}</Text>
+              <Text style={[styles.levelText, { color: colors.text }]}>Level {currentLevel}</Text>
             </View>
             <Text style={styles.pointsText}>{points.toLocaleString()} pts</Text>
           </View>
           <View style={styles.levelProgress}>
             <ProgressBar progress={levelProgress} color={EcoColors.accent} />
-            <Text style={styles.levelHint}>{pointsToNextLevel} pts to Level {currentLevel + 1}</Text>
+            <Text style={[styles.levelHint, { color: colors.textSecondary }]}>{pointsToNextLevel} pts to Level {currentLevel + 1}</Text>
           </View>
           <TouchableOpacity 
             style={styles.redeemButton}
@@ -153,8 +153,8 @@ export default function ProfileScreen() {
               <View style={[styles.statIconContainer, { backgroundColor: stat.color + '20' }]}>
                 <Ionicons name={stat.icon as any} size={24} color={stat.color} />
               </View>
-              <Text style={styles.statValue}>{stat.value}</Text>
-              <Text style={styles.statLabel}>{stat.label}</Text>
+              <Text style={[styles.statValue, { color: colors.text }]}>{stat.value}</Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{stat.label}</Text>
             </Card>
           ))}
         </View>
@@ -162,7 +162,7 @@ export default function ProfileScreen() {
         {/* Badges Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Badges</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Badges</Text>
             <TouchableOpacity>
               <Text style={styles.seeAllText}>See All</Text>
             </TouchableOpacity>
@@ -184,17 +184,17 @@ export default function ProfileScreen() {
 
         {/* Recent Activity */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recent Activity</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Recent Activity</Text>
           <Card variant="outlined" style={styles.activityCard}>
             {userReports.slice(0, 3).length > 0 ? (
               userReports.slice(0, 3).map((report, index) => (
-                <View key={report.id} style={styles.activityItem}>
+                <View key={report.id} style={[styles.activityItem, { borderBottomColor: colors.border }]}>
                   <View style={styles.activityDot} />
                   <View style={styles.activityContent}>
-                    <Text style={styles.activityText}>
+                    <Text style={[styles.activityText, { color: colors.text }]}>
                       Reported {report.category} pollution
                     </Text>
-                    <Text style={styles.activityDate}>
+                    <Text style={[styles.activityDate, { color: colors.textTertiary }]}>
                       {report.lake?.name} •{' '}
                       {new Date(report.created_at || '').toLocaleDateString()}
                     </Text>
@@ -212,7 +212,7 @@ export default function ProfileScreen() {
             ) : (
               <View style={styles.emptyActivity}>
                 <Text style={styles.emptyIcon}>📭</Text>
-                <Text style={styles.emptyText}>No recent activity</Text>
+                <Text style={[styles.emptyText, { color: colors.textTertiary }]}>No recent activity</Text>
               </View>
             )}
           </Card>
@@ -226,15 +226,15 @@ export default function ProfileScreen() {
                 key={index}
                 style={[
                   styles.menuItem,
-                  index < menuItems.length - 1 && styles.menuItemBorder,
+                  index < menuItems.length - 1 && [styles.menuItemBorder, { borderBottomColor: colors.border }],
                 ]}
                 onPress={item.action}
               >
                 <View style={styles.menuIconContainer}>
                   <Ionicons name={item.icon as any} size={20} color={EcoColors.primary} />
                 </View>
-                <Text style={styles.menuLabel}>{item.label}</Text>
-                <Ionicons name="chevron-forward" size={20} color={EcoColors.gray400} />
+                <Text style={[styles.menuLabel, { color: colors.text }]}>{item.label}</Text>
+                <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
               </TouchableOpacity>
             ))}
           </Card>
