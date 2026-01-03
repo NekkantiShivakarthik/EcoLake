@@ -2,17 +2,17 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  ActionSheetIOS,
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActionSheetIOS,
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -37,7 +37,7 @@ const categories: { key: Category; label: string; icon: string }[] = [
 export default function ReportScreen() {
   const { user } = useAuth();
   const { location, address, loading: locationLoading, getCurrentLocation, clearLocation } = useLocation();
-  const { lakes: nearbyLakes, loading: lakesLoading } = useNearbyLakes(location, 5); // Search lakes within 5km
+  const { lakes: nearbyLakes, loading: lakesLoading } = useNearbyLakes(location, 25); // Search lakes within 25km
   const { submitReport, loading: submitting } = useSubmitReport();
   const { images, loading: imageLoading, pickFromCamera, pickFromGallery, removeImage, clearImages } = useImagePicker();
   const { uploading, progress, uploadPhotos } = usePhotoUpload();
@@ -283,7 +283,7 @@ export default function ReportScreen() {
                 <Text style={styles.noLakesIcon}>🔍</Text>
                 <Text style={styles.noLakesTitle}>No lakes found nearby</Text>
                 <Text style={styles.noLakesText}>
-                  No lakes found within 50km of your location. Try moving closer to a lake or water body.
+                  No lakes found within 25km of your location. Try moving closer to a lake or water body.
                 </Text>
               </Card>
             ) : !hasFilteredLakes ? (

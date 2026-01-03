@@ -20,9 +20,12 @@ export { Toast, ToastProvider, useToast } from './toast';
 // Domain-specific cards
 export { ActivityItem } from './activity-item';
 export { BadgeItem } from './badge-item';
+export { EnhancedReportCard } from './enhanced-report-card';
 export { LakeCard } from './lake-card';
 export { LeaderboardItem } from './leaderboard-item';
 export { ReportCard } from './report-card';
 export { RewardCard } from './reward-card';
 export { StatCard } from './stat-card';
 
+// Modals
+export { EditReportModal } from './edit-report-modal';

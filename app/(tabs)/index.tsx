@@ -1,8 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import {
+    Alert,
     RefreshControl,
     ScrollView,
     StyleSheet,
@@ -10,18 +11,20 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Avatar } from '@/components/ui/avatar';
+import { EditReportModal } from '@/components/ui/edit-report-modal';
 import { EmptyState } from '@/components/ui/empty-state';
-import { ReportCard } from '@/components/ui/report-card';
+import { EnhancedReportCard } from '@/components/ui/enhanced-report-card';
 import { CardSkeleton } from '@/components/ui/skeleton';
 import { StatCard } from '@/components/ui/stat-card';
 import { EcoColors } from '@/constants/colors';
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/contexts/theme-context';
-import { useReports, useStats, useUserProfile } from '@/hooks/use-supabase';
+import { useDeleteReport, useReports, useStats, useUpdateReport, useUserProfile } from '@/hooks/use-supabase';
+import { Report } from '@/types/database';
 
 export default function HomeScreen() {
   const { user: authUser } = useAuth();
@@ -29,8 +32,12 @@ export default function HomeScreen() {
   const { stats, loading: statsLoading } = useStats(authUser?.id);
   const { reports, loading: reportsLoading, refetch } = useReports();
   const { user, points } = useUserProfile(authUser?.id);
+  const { updateReport } = useUpdateReport();
+  const { deleteReport } = useDeleteReport();
 
-  const [refreshing, setRefreshing] = React.useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -38,7 +45,35 @@ export default function HomeScreen() {
     setRefreshing(false);
   };
 
+  const handleEditReport = (report: Report) => {
+    setSelectedReport(report);
+    setEditModalVisible(true);
+  };
+
+  const handleSaveReport = async (data: { category: string; severity: number; description: string }) => {
+    if (!selectedReport) return { success: false, error: 'No report selected' };
+    
+    const result = await updateReport(selectedReport.id, data);
+    if (result.success) {
+      await refetch();
+    }
+    return result;
+  };
+
+  const handleDeleteReport = async (reportId: string) => {
+    const result = await deleteReport(reportId);
+    if (result.success) {
+      Alert.alert('Success', 'Report deleted successfully');
+      await refetch();
+    } else {
+      Alert.alert('Error', result.error || 'Failed to delete report');
+    }
+  };
+
   const recentReports = reports.slice(0, 5);
+
+  // Calculate level info
+  const currentLevel = Math.floor((user?.points || points) / 500) + 1;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -50,48 +85,67 @@ export default function HomeScreen() {
         }
       >
         {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Text style={styles.greeting}>Welcome back,</Text>
-            <Text style={styles.userName}>{user?.name || 'Eco Hero'} 👋</Text>
-          </View>
-          <View style={styles.headerRight}>
-            <TouchableOpacity
-              style={styles.themeToggle}
-              onPress={() => setTheme(actualTheme === 'dark' ? 'light' : 'dark')}
-            >
-              <Ionicons
-                name={actualTheme === 'dark' ? 'sunny' : 'moon'}
-                size={24}
-                color={EcoColors.gray700}
-              />
-            </TouchableOpacity>
-            <Link href="/(tabs)/redeem" asChild>
-              <TouchableOpacity style={styles.pointsBadge}>
-                <Text style={styles.pointsIcon}>⭐</Text>
-                <Text style={styles.pointsText}>{points}</Text>
+        <Animated.View entering={FadeInDown.delay(50).springify()}>
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
+              <Text style={styles.greeting}>Welcome back,</Text>
+              <Text style={styles.userName}>{user?.name || 'Eco Hero'} 👋</Text>
+            </View>
+            <View style={styles.headerRight}>
+              <TouchableOpacity
+                style={styles.themeToggle}
+                onPress={() => setTheme(actualTheme === 'dark' ? 'light' : 'dark')}
+              >
+                <Ionicons
+                  name={actualTheme === 'dark' ? 'sunny' : 'moon'}
+                  size={22}
+                  color={EcoColors.gray700}
+                />
               </TouchableOpacity>
-            </Link>
-            <Avatar
-              source={user?.avatar_url}
-              name={user?.name || 'User'}
-              size="md"
-              showBadge
-              badgeColor={EcoColors.success}
-            />
+              <Link href="/(tabs)/redeem" asChild>
+                <TouchableOpacity style={styles.pointsBadge}>
+                  <LinearGradient
+                    colors={['#FFD700', '#FFA500']}
+                    style={styles.pointsGradient}
+                  >
+                    <Text style={styles.pointsIcon}>⭐</Text>
+                    <Text style={styles.pointsText}>{points.toLocaleString()}</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </Link>
+              <View style={styles.avatarContainer}>
+                <Avatar
+                  source={user?.avatar_url || undefined}
+                  name={user?.name || 'User'}
+                  size="md"
+                  showBadge
+                  badgeColor={EcoColors.success}
+                />
+                <View style={styles.levelBadge}>
+                  <Text style={styles.levelText}>{currentLevel}</Text>
+                </View>
+              </View>
+            </View>
           </View>
-        </View>
+        </Animated.View>
 
         {/* Hero Banner with Gradient */}
         <Animated.View entering={FadeInDown.delay(100).springify()}>
           <LinearGradient
-            colors={[EcoColors.primary, '#059669']}
+            colors={['#0E7490', '#059669', '#10B981']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.heroBanner}
           >
+            {/* Background decorative elements */}
+            <View style={styles.heroDecoration1} />
+            <View style={styles.heroDecoration2} />
+            
             <View style={styles.heroContent}>
-              <Text style={styles.heroTitle}>Protect Our Lakes 🌿</Text>
+              <View style={styles.heroTitleRow}>
+                <Text style={styles.heroTitle}>Protect Our Lakes</Text>
+                <Text style={styles.heroTitleEmoji}>🌊</Text>
+              </View>
               <Text style={styles.heroSubtitle}>
                 Report pollution, join cleanups, and earn rewards for making a difference.
               </Text>
@@ -99,19 +153,54 @@ export default function HomeScreen() {
                 <Link href="/(tabs)/report" asChild>
                   <TouchableOpacity style={styles.heroButton}>
                     <Ionicons name="camera" size={18} color={EcoColors.primary} />
-                    <Text style={styles.heroButtonText}>Report</Text>
+                    <Text style={styles.heroButtonText}>Report Now</Text>
                   </TouchableOpacity>
                 </Link>
-                <Link href="/(tabs)/redeem" asChild>
+                <Link href="/(tabs)/volunteer" asChild>
                   <TouchableOpacity style={[styles.heroButton, styles.heroButtonSecondary]}>
-                    <Ionicons name="gift" size={18} color={EcoColors.white} />
-                    <Text style={[styles.heroButtonText, styles.heroButtonTextSecondary]}>Redeem</Text>
+                    <Ionicons name="hand-left" size={18} color={EcoColors.white} />
+                    <Text style={[styles.heroButtonText, styles.heroButtonTextSecondary]}>Volunteer</Text>
                   </TouchableOpacity>
                 </Link>
               </View>
             </View>
-            <Text style={styles.heroEmoji}>🌊</Text>
           </LinearGradient>
+        </Animated.View>
+
+        {/* Quick Actions */}
+        <Animated.View entering={FadeInRight.delay(150).springify()} style={styles.quickActions}>
+          <Link href="/(tabs)/explore" asChild>
+            <TouchableOpacity style={styles.quickAction}>
+              <LinearGradient colors={[EcoColors.info + '20', EcoColors.info + '10']} style={styles.quickActionIcon}>
+                <Text style={styles.quickActionEmoji}>🔍</Text>
+              </LinearGradient>
+              <Text style={styles.quickActionText}>Explore</Text>
+            </TouchableOpacity>
+          </Link>
+          <Link href="/(tabs)/leaderboard" asChild>
+            <TouchableOpacity style={styles.quickAction}>
+              <LinearGradient colors={[EcoColors.accent + '20', EcoColors.accent + '10']} style={styles.quickActionIcon}>
+                <Text style={styles.quickActionEmoji}>🏆</Text>
+              </LinearGradient>
+              <Text style={styles.quickActionText}>Leaders</Text>
+            </TouchableOpacity>
+          </Link>
+          <Link href="/(tabs)/redeem" asChild>
+            <TouchableOpacity style={styles.quickAction}>
+              <LinearGradient colors={[EcoColors.secondary + '20', EcoColors.secondary + '10']} style={styles.quickActionIcon}>
+                <Text style={styles.quickActionEmoji}>🎁</Text>
+              </LinearGradient>
+              <Text style={styles.quickActionText}>Rewards</Text>
+            </TouchableOpacity>
+          </Link>
+          <Link href="/(tabs)/activity" asChild>
+            <TouchableOpacity style={styles.quickAction}>
+              <LinearGradient colors={[EcoColors.primary + '20', EcoColors.primary + '10']} style={styles.quickActionIcon}>
+                <Text style={styles.quickActionEmoji}>📊</Text>
+              </LinearGradient>
+              <Text style={styles.quickActionText}>Activity</Text>
+            </TouchableOpacity>
+          </Link>
         </Animated.View>
 
         {/* Stats Section */}
@@ -150,10 +239,11 @@ export default function HomeScreen() {
         {/* Recent Reports Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Reports</Text>
+            <Text style={styles.sectionTitle}>🔥 Recent Reports</Text>
             <Link href="/(tabs)/explore" asChild>
-              <TouchableOpacity>
+              <TouchableOpacity style={styles.seeAllBtn}>
                 <Text style={styles.seeAllText}>View All</Text>
+                <Ionicons name="arrow-forward" size={16} color={EcoColors.primary} />
               </TouchableOpacity>
             </Link>
           </View>
@@ -172,15 +262,32 @@ export default function HomeScreen() {
           />
         ) : (
           recentReports.map((report, index) => (
-            <Animated.View key={report.id} entering={FadeInDown.delay(300 + index * 100).springify()}>
-              <ReportCard report={report} />
-            </Animated.View>
+            <EnhancedReportCard
+              key={report.id}
+              report={report}
+              index={index}
+              isOwner={report.user?.id === authUser?.id}
+              variant={index === 0 ? 'featured' : 'default'}
+              onEdit={() => handleEditReport(report)}
+              onDelete={() => handleDeleteReport(report.id)}
+            />
           ))
         )}
 
         {/* Bottom Spacing */}
         <View style={styles.bottomSpacing} />
       </ScrollView>
+
+      {/* Edit Report Modal */}
+      <EditReportModal
+        visible={editModalVisible}
+        report={selectedReport}
+        onClose={() => {
+          setEditModalVisible(false);
+          setSelectedReport(null);
+        }}
+        onSave={handleSaveReport}
+      />
     </SafeAreaView>
   );
 }
@@ -204,24 +311,28 @@ const styles = StyleSheet.create({
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
   },
   greeting: {
     fontSize: 14,
     color: EcoColors.gray500,
+    fontWeight: '500',
   },
   userName: {
-    fontSize: 22,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: '800',
     color: EcoColors.gray900,
+    letterSpacing: -0.5,
   },
   pointsBadge: {
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  pointsGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: EcoColors.accentLight,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     gap: 4,
   },
   pointsIcon: {
@@ -239,7 +350,27 @@ const styles = StyleSheet.create({
     backgroundColor: EcoColors.gray100,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 8,
+  },
+  avatarContainer: {
+    position: 'relative',
+  },
+  levelBadge: {
+    position: 'absolute',
+    bottom: -4,
+    right: -4,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: EcoColors.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: EcoColors.white,
+  },
+  levelText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: EcoColors.white,
   },
   avatar: {
     width: 44,
@@ -249,51 +380,84 @@ const styles = StyleSheet.create({
   },
   heroBanner: {
     marginHorizontal: 20,
-    marginBottom: 24,
-    backgroundColor: EcoColors.primary,
-    borderRadius: 20,
-    padding: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
+    marginBottom: 20,
+    borderRadius: 24,
+    padding: 24,
     overflow: 'hidden',
+    minHeight: 180,
+  },
+  heroDecoration1: {
+    position: 'absolute',
+    top: -30,
+    right: -30,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  heroDecoration2: {
+    position: 'absolute',
+    bottom: -50,
+    left: -20,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: 'rgba(255,255,255,0.05)',
   },
   heroContent: {
     flex: 1,
+    zIndex: 1,
+  },
+  heroTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
   },
   heroTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: '800',
     color: EcoColors.white,
-    marginBottom: 6,
+    letterSpacing: -0.5,
+  },
+  heroTitleEmoji: {
+    fontSize: 28,
   },
   heroSubtitle: {
-    fontSize: 13,
+    fontSize: 14,
     color: EcoColors.white,
     opacity: 0.9,
-    lineHeight: 18,
-    marginBottom: 12,
+    lineHeight: 20,
+    marginBottom: 16,
+    maxWidth: '90%',
   },
   heroButtons: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 10,
   },
   heroButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: EcoColors.white,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 12,
-    gap: 6,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 14,
+    gap: 8,
+    shadowColor: EcoColors.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
   heroButtonSecondary: {
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: EcoColors.white,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderWidth: 0,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   heroButtonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
     color: EcoColors.primary,
   },
   heroButtonTextSecondary: {
@@ -305,6 +469,32 @@ const styles = StyleSheet.create({
   heroEmoji: {
     fontSize: 64,
     marginLeft: 8,
+  },
+  quickActions: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    marginBottom: 24,
+    gap: 12,
+  },
+  quickAction: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 8,
+  },
+  quickActionIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  quickActionEmoji: {
+    fontSize: 26,
+  },
+  quickActionText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: EcoColors.gray600,
   },
   section: {
     marginBottom: 16,
@@ -322,6 +512,11 @@ const styles = StyleSheet.create({
     color: EcoColors.gray800,
     paddingHorizontal: 20,
     marginBottom: 12,
+  },
+  seeAllBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   seeAllText: {
     fontSize: 14,

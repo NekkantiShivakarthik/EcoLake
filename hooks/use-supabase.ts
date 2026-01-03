@@ -123,11 +123,26 @@ async function searchNearbyLakes(
     const radiusMeters = radiusKm * 1000;
     
     // Overpass API query to find water bodies (lakes, reservoirs, ponds)
+    // Using multiple query patterns to catch different OSM tagging schemes:
+    // 1. natural=water with water=lake/reservoir/pond
+    // 2. natural=water without specific water tag (general water bodies)
+    // 3. landuse=reservoir
+    // 4. water=lake/reservoir/pond (standalone tag)
     const query = `
-      [out:json][timeout:25];
+      [out:json][timeout:30];
       (
+        // Lakes with specific water tag
         way["natural"="water"]["water"~"lake|reservoir|pond"](around:${radiusMeters},${latitude},${longitude});
         relation["natural"="water"]["water"~"lake|reservoir|pond"](around:${radiusMeters},${latitude},${longitude});
+        // General water bodies (natural=water without specific type, often large lakes)
+        way["natural"="water"]["name"](around:${radiusMeters},${latitude},${longitude});
+        relation["natural"="water"]["name"](around:${radiusMeters},${latitude},${longitude});
+        // Reservoirs tagged as landuse
+        way["landuse"="reservoir"](around:${radiusMeters},${latitude},${longitude});
+        relation["landuse"="reservoir"](around:${radiusMeters},${latitude},${longitude});
+        // Standalone water tag
+        way["water"~"lake|reservoir|pond|basin"](around:${radiusMeters},${latitude},${longitude});
+        relation["water"~"lake|reservoir|pond|basin"](around:${radiusMeters},${latitude},${longitude});
       );
       out center;
     `;
@@ -135,18 +150,25 @@ async function searchNearbyLakes(
     const response = await fetch('https://overpass-api.de/api/interpreter', {
       method: 'POST',
       body: query,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch nearby lakes');
+      console.error('Overpass API error:', response.status, response.statusText);
+      throw new Error(`Failed to fetch nearby lakes: ${response.status}`);
     }
 
     const data = await response.json();
+    console.log('Overpass API response elements:', data.elements?.length || 0);
     const lakes: NearbyLake[] = [];
 
-    // Process the results
+    // Process the results - deduplicate by name to avoid showing the same lake multiple times
+    const seenNames = new Set<string>();
+    
     for (const element of data.elements) {
-      const name = element.tags?.name || `Unnamed Lake`;
+      const name = element.tags?.name || `Unnamed Water Body`;
       let lat = element.lat;
       let lng = element.lon;
 
@@ -157,6 +179,13 @@ async function searchNearbyLakes(
       }
 
       if (lat && lng) {
+        // Skip duplicates with same name (different OSM elements for same lake)
+        const nameKey = name.toLowerCase();
+        if (seenNames.has(nameKey) && name !== 'Unnamed Water Body') {
+          continue;
+        }
+        seenNames.add(nameKey);
+        
         const distance = calculateDistance(latitude, longitude, lat, lng);
         
         lakes.push({
@@ -165,13 +194,15 @@ async function searchNearbyLakes(
           lat,
           lng,
           distance,
-          type: element.tags?.water || 'lake',
+          type: element.tags?.water || element.tags?.landuse || 'lake',
         });
       }
     }
 
     // Sort by distance
     lakes.sort((a, b) => (a.distance || 0) - (b.distance || 0));
+    
+    console.log('Found', lakes.length, 'unique lakes within', radiusKm, 'km');
 
     // Cache the results
     lakeSearchCache.set(cacheKey, { data: lakes, timestamp: Date.now() });
@@ -454,9 +485,12 @@ export function useStats(userId?: string) {
 
     async function fetchStats() {
       try {
+        // userId is guaranteed to be defined here due to the early return above
+        const userIdValue = userId as string;
+        
         const [reportsRes, cleanedRes, lakesRes, cleanersRes] = await Promise.all([
-          supabase.from('reports').select('id', { count: 'exact', head: true }).eq('user_id', userId),
-          supabase.from('reports').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('status', 'cleaned'),
+          supabase.from('reports').select('id', { count: 'exact', head: true }).eq('user_id', userIdValue),
+          supabase.from('reports').select('id', { count: 'exact', head: true }).eq('user_id', userIdValue).eq('status', 'cleaned'),
           supabase.from('lakes').select('id', { count: 'exact', head: true }),
           supabase.from('users').select('id', { count: 'exact', head: true }).eq('role', 'cleaner'),
         ]);
@@ -652,6 +686,80 @@ export function useSubmitReport() {
   };
 
   return { submitReport, loading, error };
+}
+
+// Update report hook
+export function useUpdateReport() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const updateReport = async (
+    reportId: string,
+    data: {
+      category?: string;
+      severity?: number;
+      description?: string;
+    }
+  ) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const updateData: any = {};
+      if (data.category) updateData.category = data.category;
+      if (data.severity) updateData.severity = data.severity;
+      if (data.description) updateData.description = data.description;
+      if (data.severity) updateData.priority_score = data.severity * 20;
+      updateData.updated_at = new Date().toISOString();
+
+      const { error: updateError } = await (supabase
+        .from('reports') as any)
+        .update(updateData)
+        .eq('id', reportId);
+
+      if (updateError) throw updateError;
+
+      return { success: true };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to update report';
+      setError(message);
+      return { success: false, error: message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { updateReport, loading, error };
+}
+
+// Delete report hook
+export function useDeleteReport() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const deleteReport = async (reportId: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { error: deleteError } = await (supabase
+        .from('reports') as any)
+        .delete()
+        .eq('id', reportId);
+
+      if (deleteError) throw deleteError;
+
+      return { success: true };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to delete report';
+      setError(message);
+      return { success: false, error: message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { deleteReport, loading, error };
 }
 
 // Upload photos hook

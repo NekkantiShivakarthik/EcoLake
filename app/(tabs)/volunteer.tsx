@@ -5,6 +5,7 @@ import { EcoColors } from '@/constants/colors';
 import { useAuth } from '@/contexts/auth-context';
 import { supabase } from '@/lib/supabase';
 import { decode } from 'base64-arraybuffer';
+import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useState } from 'react';
 import {
@@ -118,14 +119,26 @@ export default function VolunteerWorkScreen() {
   };
 
   const pickImage = async () => {
-    const result = await ImagePicker.launchImagePickerAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: true,
-      quality: 0.8,
-    });
+    // Request permission first
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Required', 'Please allow access to your photo library to upload proof photos.');
+      return;
+    }
 
-    if (!result.canceled && result.assets) {
-      uploadProofPhotos(result.assets);
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsMultipleSelection: true,
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets) {
+        uploadProofPhotos(result.assets);
+      }
+    } catch (error) {
+      console.error('Image picker error:', error);
+      Alert.alert('Error', 'Failed to open image picker. Please try again.');
     }
   };
 
@@ -135,16 +148,17 @@ export default function VolunteerWorkScreen() {
       const uploadedUrls: string[] = [];
 
       for (const asset of assets) {
-        const response = await fetch(asset.uri);
-        const blob = await response.blob();
-        const arrayBuffer = await blob.arrayBuffer();
-        const base64 = decode(Buffer.from(arrayBuffer).toString('base64'));
+        // Read file as base64 using expo-file-system
+        const base64 = await FileSystem.readAsStringAsync(asset.uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        const arrayBuffer = decode(base64);
 
-        const fileName = `proof_${user?.id}_${Date.now()}_${Math.random()}.jpg`;
+        const fileName = `proof_${user?.id}_${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
         const { data, error } = await supabase.storage
           .from('report-photos')
-          .upload(fileName, base64, {
-            contentType: 'image/jpeg',
+          .upload(fileName, arrayBuffer, {
+            contentType: asset.mimeType || 'image/jpeg',
           });
 
         if (error) throw error;
