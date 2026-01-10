@@ -16,12 +16,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useBadgeNotification } from '@/components/ui/badge-notification';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EcoColors } from '@/constants/colors';
 import { useAuth } from '@/contexts/auth-context';
 import { useImagePicker, useLocation, usePhotoUpload } from '@/hooks/use-media';
-import { useNearbyLakes, useSubmitReport } from '@/hooks/use-supabase';
+import { useNearbyLakes, useSubmitReport, useUserProfile } from '@/hooks/use-supabase';
 
 type Category = 'trash' | 'oil' | 'plastic' | 'vegetation' | 'animal' | 'other';
 
@@ -36,6 +37,8 @@ const categories: { key: Category; label: string; icon: string }[] = [
 
 export default function ReportScreen() {
   const { user } = useAuth();
+  const { points } = useUserProfile(user?.id);
+  const { showBadgeNotification } = useBadgeNotification();
   const { location, address, loading: locationLoading, getCurrentLocation, clearLocation } = useLocation();
   const { lakes: nearbyLakes, loading: lakesLoading } = useNearbyLakes(location, 25); // Search lakes within 25km
   const { submitReport, loading: submitting } = useSubmitReport();
@@ -139,21 +142,36 @@ export default function ReportScreen() {
     });
 
     if (result.success) {
-      Alert.alert('Success', 'Your pollution report has been submitted! Thank you for helping keep our lakes clean.', [
-        {
-          text: 'OK',
-          onPress: () => {
-            // Reset form
-            setSelectedLake(null);
-            setSelectedCategory(null);
-            setSeverity(3);
-            setDescription('');
-            clearImages();
-            clearLocation();
-            router.back();
+      const pointsEarned = result.pointsEarned || 0;
+      const newBadges = result.newBadges || [];
+      
+      // Show success alert
+      Alert.alert(
+        '🎉 Report Submitted!', 
+        `Thank you for helping keep our lakes clean!\n\n⭐ You earned ${pointsEarned} points!${newBadges.length > 0 ? `\n\n🏆 New badge${newBadges.length > 1 ? 's' : ''} earned!` : ''}`, 
+        [
+          {
+            text: 'Awesome!',
+            onPress: () => {
+              // Show badge notifications
+              newBadges.forEach((badge, index) => {
+                setTimeout(() => {
+                  showBadgeNotification(badge);
+                }, index * 500); // Stagger badge notifications
+              });
+              
+              // Reset form
+              setSelectedLake(null);
+              setSelectedCategory(null);
+              setSeverity(3);
+              setDescription('');
+              clearImages();
+              clearLocation();
+              router.back();
+            },
           },
-        },
-      ]);
+        ]
+      );
     } else {
       Alert.alert('Error', result.error || 'Failed to submit report. Please try again.');
     }
@@ -170,9 +188,18 @@ export default function ReportScreen() {
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Report Pollution</Text>
+            <View style={styles.headerRow}>
+              <Text style={styles.title}>Report Pollution</Text>
+              <View style={styles.pointsBadge}>
+                <Text style={styles.pointsIcon}>⭐</Text>
+                <Text style={styles.pointsText}>{points}</Text>
+              </View>
+            </View>
             <Text style={styles.subtitle}>
               Help keep our lakes clean by reporting pollution
+            </Text>
+            <Text style={styles.pointsHint}>
+              📝 Earn {10 + (severity * 2)} points for this report!
             </Text>
           </View>
 
@@ -536,15 +563,43 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 24,
   },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     color: EcoColors.gray900,
   },
+  pointsBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: EcoColors.warning + '20',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    gap: 4,
+  },
+  pointsIcon: {
+    fontSize: 16,
+  },
+  pointsText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: EcoColors.warning,
+  },
   subtitle: {
     fontSize: 14,
     color: EcoColors.gray500,
     marginTop: 4,
+  },
+  pointsHint: {
+    fontSize: 13,
+    color: EcoColors.primary,
+    marginTop: 8,
+    fontWeight: '500',
   },
   section: {
     marginBottom: 24,

@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import {
     Alert,
+    RefreshControl,
     ScrollView,
     StyleSheet,
     Text,
@@ -23,9 +24,16 @@ import { useBadges, useReports, useUserProfile } from '@/hooks/use-supabase';
 export default function ProfileScreen() {
   const { user: authUser, signOut } = useAuth();
   const { theme, actualTheme, setTheme } = useTheme();
-  const { user, badges: earnedBadges, points, loading } = useUserProfile(authUser?.id);
+  const { user, badges: earnedBadges, points, loading, refetch: refetchProfile } = useUserProfile(authUser?.id);
   const { badges: allBadges } = useBadges();
-  const { reports } = useReports();
+  const { reports, refetch: refetchReports } = useReports();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([refetchProfile(), refetchReports()]);
+    setRefreshing(false);
+  };
 
   // Calculate stats
   const userReports = reports.filter((r) => r.user?.id === user?.id);
@@ -75,7 +83,16 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh} 
+            tintColor={EcoColors.primary} 
+          />
+        }
+      >
         {/* Gradient Header */}
         <LinearGradient
           colors={[EcoColors.primary, EcoColors.primaryDark]}

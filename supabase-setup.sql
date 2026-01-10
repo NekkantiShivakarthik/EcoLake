@@ -94,7 +94,28 @@ CREATE POLICY "NGO admins can update reports"
     )
   );
 
--- 6. Create function to handle new user signup (RECOMMENDED)
+-- Users can delete their own reports
+CREATE POLICY "Users can delete own reports"
+  ON reports FOR DELETE
+  USING (auth.uid() = user_id);
+
+-- NGO admins can delete any report
+CREATE POLICY "NGO admins can delete reports"
+  ON reports FOR DELETE
+  USING (
+    EXISTS (
+      SELECT 1 FROM users
+      WHERE users.id = auth.uid()
+      AND users.role = 'ngo_admin'
+    )
+  );
+
+-- 6. Enable realtime for tables that need live updates
+-- ============================================
+ALTER PUBLICATION supabase_realtime ADD TABLE points_log;
+ALTER PUBLICATION supabase_realtime ADD TABLE users;
+
+-- 7. Create function to handle new user signup (RECOMMENDED)
 -- ============================================
 -- This automatically creates a user profile when someone signs up
 -- This is more secure than allowing clients to insert directly

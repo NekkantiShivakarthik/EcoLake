@@ -23,6 +23,11 @@ export function LeaderboardItem({ rank, user, points }: LeaderboardItemProps) {
 
   const medal = getMedalEmoji(rank);
 
+  // Handle null/undefined user
+  const userName = user?.name || 'Anonymous';
+  const userRole = user?.role || 'reporter';
+  const userAvatar = user?.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default';
+
   return (
     <Card 
       variant={rank <= 3 ? 'elevated' : 'outlined'} 
@@ -37,20 +42,20 @@ export function LeaderboardItem({ rank, user, points }: LeaderboardItemProps) {
       </View>
 
       <Image
-        source={user.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'}
+        source={userAvatar}
         style={styles.avatar}
         contentFit="cover"
       />
 
       <View style={styles.userInfo}>
-        <Text style={styles.name}>{user.name || 'Anonymous'}</Text>
+        <Text style={styles.name}>{userName}</Text>
         <View style={styles.roleContainer}>
-          <Text style={styles.role}>{user.role}</Text>
+          <Text style={styles.role}>{userRole}</Text>
         </View>
       </View>
 
       <View style={styles.pointsContainer}>
-        <Text style={styles.points}>{points}</Text>
+        <Text style={styles.points}>{points ?? 0}</Text>
         <Text style={styles.pointsLabel}>pts</Text>
       </View>
     </Card>

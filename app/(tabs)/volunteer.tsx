@@ -1,8 +1,10 @@
+import { useBadgeNotification } from '@/components/ui/badge-notification';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { StatusChip } from '@/components/ui/chip';
 import { EcoColors } from '@/constants/colors';
 import { useAuth } from '@/contexts/auth-context';
+import { checkAndAwardBadges, useUserProfile } from '@/hooks/use-supabase';
 import { supabase } from '@/lib/supabase';
 import { decode } from 'base64-arraybuffer';
 import * as FileSystem from 'expo-file-system';
@@ -40,6 +42,8 @@ interface Report {
 
 export default function VolunteerWorkScreen() {
   const { user } = useAuth();
+  const { points } = useUserProfile(user?.id);
+  const { showBadgeNotification } = useBadgeNotification();
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -79,8 +83,8 @@ export default function VolunteerWorkScreen() {
 
   const claimReport = async (reportId: string) => {
     try {
-      const { error } = await supabase
-        .from('reports')
+      const { error } = await (supabase
+        .from('reports') as any)
         .update({
           assigned_cleaner_id: user?.id,
           status: 'in_progress',
@@ -150,7 +154,7 @@ export default function VolunteerWorkScreen() {
       for (const asset of assets) {
         // Read file as base64 using expo-file-system
         const base64 = await FileSystem.readAsStringAsync(asset.uri, {
-          encoding: FileSystem.EncodingType.Base64,
+          encoding: 'base64',
         });
         const arrayBuffer = decode(base64);
 
@@ -179,7 +183,7 @@ export default function VolunteerWorkScreen() {
   };
 
   const submitWork = async () => {
-    if (!selectedReport) return;
+    if (!selectedReport || !user) return;
 
     if (proofPhotos.length === 0) {
       Alert.alert('Error', 'Please upload at least one proof photo');
@@ -187,8 +191,8 @@ export default function VolunteerWorkScreen() {
     }
 
     try {
-      const { error } = await supabase
-        .from('reports')
+      const { error } = await (supabase
+        .from('reports') as any)
         .update({
           status: 'cleaned',
           volunteer_proof_photos: proofPhotos,
@@ -199,14 +203,44 @@ export default function VolunteerWorkScreen() {
 
       if (error) throw error;
 
+      // Award points for cleanup
       const pointsEarned = (selectedReport.severity || 1) * 10;
+      
+      // Get current balance and add points
+      const { data: currentPoints } = await supabase
+        .from('points_log')
+        .select('balance_snapshot')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      const currentBalance = (currentPoints as any)?.[0]?.balance_snapshot || 0;
+      const newBalance = currentBalance + pointsEarned;
+
+      await (supabase.from('points_log') as any).insert({
+        user_id: user.id,
+        change: pointsEarned,
+        reason: `Cleanup completed: ${selectedReport.lake_name || 'Unknown Lake'}`,
+        balance_snapshot: newBalance,
+      });
+
+      // Check for new badges
+      const newBadges = await checkAndAwardBadges(user.id);
+
       Alert.alert(
         'Success! 🎉',
-        `Work submitted successfully! You earned ${pointsEarned} points!`,
+        `Work submitted successfully! You earned ${pointsEarned} points!${newBadges.length > 0 ? `\n\n🏆 New badge${newBadges.length > 1 ? 's' : ''} earned!` : ''}`,
         [
           {
             text: 'OK',
             onPress: () => {
+              // Show badge notifications
+              newBadges.forEach((badge, index) => {
+                setTimeout(() => {
+                  showBadgeNotification(badge);
+                }, index * 500);
+              });
+              
               setSelectedReport(null);
               setProofPhotos([]);
               setNotes('');
@@ -377,8 +411,8 @@ export default function VolunteerWorkScreen() {
                       style: 'destructive',
                       onPress: async () => {
                         try {
-                          await supabase
-                            .from('reports')
+                          await (supabase
+                            .from('reports') as any)
                             .update({
                               assigned_cleaner_id: null,
                               status: 'verified',
@@ -424,7 +458,7 @@ export default function VolunteerWorkScreen() {
         {/* Points Display */}
         <Card style={[styles.card, styles.pointsCard]}>
           <Text style={styles.pointsLabel}>Your Points</Text>
-          <Text style={styles.pointsDisplay}>{user?.points || 0}</Text>
+          <Text style={styles.pointsDisplay}>{points}</Text>
           <Text style={styles.pointsSubtext}>Keep cleaning to earn more!</Text>
         </Card>
 

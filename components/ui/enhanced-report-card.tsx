@@ -5,13 +5,15 @@ import React, { useState } from 'react';
 import {
     Alert,
     Dimensions,
+    GestureResponderEvent,
+    Modal,
+    Pressable,
     StyleSheet,
     Text,
     TouchableOpacity,
     View
 } from 'react-native';
 import Animated, {
-    FadeIn,
     FadeInDown,
     useAnimatedStyle,
     useSharedValue
@@ -119,6 +121,55 @@ export function EnhancedReportCard({
 
   const CardWrapper = onPress ? TouchableOpacity : View;
 
+  // Action Sheet Modal Component (rendered once, used by all variants)
+  const ActionSheetModal = () => (
+    <Modal
+      visible={showActions}
+      transparent
+      animationType="fade"
+      onRequestClose={() => setShowActions(false)}
+    >
+      <Pressable 
+        style={styles.modalOverlay} 
+        onPress={() => setShowActions(false)}
+      >
+        <Pressable style={styles.actionSheet} onPress={(e: GestureResponderEvent) => e.stopPropagation()}>
+          <View style={styles.actionSheetHandle} />
+          <Text style={styles.actionSheetTitle}>Report Actions</Text>
+          
+          <TouchableOpacity style={styles.actionSheetItem} onPress={handleEdit}>
+            <View style={[styles.actionSheetIconContainer, { backgroundColor: EcoColors.primary + '15' }]}>
+              <Ionicons name="pencil" size={22} color={EcoColors.primary} />
+            </View>
+            <View style={styles.actionSheetItemContent}>
+              <Text style={styles.actionSheetItemText}>Edit Report</Text>
+              <Text style={styles.actionSheetItemSubtext}>Modify details and description</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={EcoColors.gray300} />
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.actionSheetItem} onPress={handleDelete}>
+            <View style={[styles.actionSheetIconContainer, { backgroundColor: EcoColors.error + '15' }]}>
+              <Ionicons name="trash" size={22} color={EcoColors.error} />
+            </View>
+            <View style={styles.actionSheetItemContent}>
+              <Text style={[styles.actionSheetItemText, { color: EcoColors.error }]}>Delete Report</Text>
+              <Text style={styles.actionSheetItemSubtext}>Permanently remove this report</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={EcoColors.gray300} />
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.actionSheetCancelBtn} 
+            onPress={() => setShowActions(false)}
+          >
+            <Text style={styles.actionSheetCancelText}>Cancel</Text>
+          </TouchableOpacity>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+
   if (variant === 'compact') {
     return (
       <Animated.View entering={FadeInDown.delay(index * 50).springify()}>
@@ -175,25 +226,8 @@ export function EnhancedReportCard({
           </Card>
         </CardWrapper>
 
-        {/* Action Menu */}
-        {showActions && isOwner && (
-          <Animated.View entering={FadeIn.duration(200)} style={styles.actionMenu}>
-            <TouchableOpacity style={styles.actionItem} onPress={handleEdit}>
-              <Ionicons name="pencil" size={18} color={EcoColors.primary} />
-              <Text style={styles.actionText}>Edit Report</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.actionItem} onPress={handleDelete}>
-              <Ionicons name="trash" size={18} color={EcoColors.error} />
-              <Text style={[styles.actionText, { color: EcoColors.error }]}>Delete</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.actionItem, styles.actionCancel]} 
-              onPress={() => setShowActions(false)}
-            >
-              <Text style={styles.actionCancelText}>Cancel</Text>
-            </TouchableOpacity>
-          </Animated.View>
-        )}
+        {/* Action Sheet Modal */}
+        {isOwner && <ActionSheetModal />}
       </Animated.View>
     );
   }
@@ -323,25 +357,8 @@ export function EnhancedReportCard({
           </Card>
         </CardWrapper>
 
-        {/* Action Menu */}
-        {showActions && isOwner && (
-          <Animated.View entering={FadeIn.duration(200)} style={styles.actionMenu}>
-            <TouchableOpacity style={styles.actionItem} onPress={handleEdit}>
-              <Ionicons name="pencil" size={18} color={EcoColors.primary} />
-              <Text style={styles.actionText}>Edit Report</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.actionItem} onPress={handleDelete}>
-              <Ionicons name="trash" size={18} color={EcoColors.error} />
-              <Text style={[styles.actionText, { color: EcoColors.error }]}>Delete</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.actionItem, styles.actionCancel]} 
-              onPress={() => setShowActions(false)}
-            >
-              <Text style={styles.actionCancelText}>Cancel</Text>
-            </TouchableOpacity>
-          </Animated.View>
-        )}
+        {/* Action Sheet Modal */}
+        {isOwner && <ActionSheetModal />}
       </Animated.View>
     );
   }
@@ -448,25 +465,8 @@ export function EnhancedReportCard({
         </Card>
       </CardWrapper>
 
-      {/* Action Menu */}
-      {showActions && isOwner && (
-        <Animated.View entering={FadeIn.duration(200)} style={styles.actionMenu}>
-          <TouchableOpacity style={styles.actionItem} onPress={handleEdit}>
-            <Ionicons name="pencil" size={18} color={EcoColors.primary} />
-            <Text style={styles.actionText}>Edit Report</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionItem} onPress={handleDelete}>
-            <Ionicons name="trash" size={18} color={EcoColors.error} />
-            <Text style={[styles.actionText, { color: EcoColors.error }]}>Delete</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.actionItem, styles.actionCancel]} 
-            onPress={() => setShowActions(false)}
-          >
-            <Text style={styles.actionCancelText}>Cancel</Text>
-          </TouchableOpacity>
-        </Animated.View>
-      )}
+      {/* Action Sheet Modal */}
+      {isOwner && <ActionSheetModal />}
     </Animated.View>
   );
 }
@@ -843,46 +843,74 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
 
-  // Action Menu Styles
-  actionMenu: {
-    position: 'absolute',
-    top: '100%',
-    right: 16,
-    backgroundColor: EcoColors.white,
-    borderRadius: 16,
-    shadowColor: EcoColors.black,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
-    zIndex: 100,
-    marginTop: -40,
-    minWidth: 180,
-    overflow: 'hidden',
+  // Modal Action Sheet Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
   },
-  actionItem: {
+  actionSheet: {
+    backgroundColor: EcoColors.white,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 12,
+    paddingBottom: 34,
+    paddingHorizontal: 20,
+  },
+  actionSheetHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: EcoColors.gray200,
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  actionSheetTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: EcoColors.gray800,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  actionSheetItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    gap: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 4,
     borderBottomWidth: 1,
     borderBottomColor: EcoColors.gray100,
   },
-  actionText: {
-    fontSize: 15,
-    color: EcoColors.gray700,
-    fontWeight: '500',
-  },
-  actionCancel: {
+  actionSheetIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    alignItems: 'center',
     justifyContent: 'center',
-    borderBottomWidth: 0,
+    marginRight: 14,
   },
-  actionCancelText: {
-    fontSize: 15,
+  actionSheetItemContent: {
+    flex: 1,
+  },
+  actionSheetItemText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: EcoColors.gray800,
+    marginBottom: 2,
+  },
+  actionSheetItemSubtext: {
+    fontSize: 13,
     color: EcoColors.gray500,
-    fontWeight: '500',
-    textAlign: 'center',
-    width: '100%',
+  },
+  actionSheetCancelBtn: {
+    marginTop: 16,
+    paddingVertical: 16,
+    backgroundColor: EcoColors.gray100,
+    borderRadius: 14,
+    alignItems: 'center',
+  },
+  actionSheetCancelText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: EcoColors.gray600,
   },
 });

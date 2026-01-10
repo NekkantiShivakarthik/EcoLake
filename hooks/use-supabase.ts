@@ -340,7 +340,7 @@ export function useLeaderboard(timeFilter: 'weekly' | 'monthly' | 'all-time' = '
         .from('points_log')
         .select(`
           user_id,
-          points,
+          change,
           balance_snapshot,
           created_at,
           user:users(*)
@@ -374,11 +374,11 @@ export function useLeaderboard(timeFilter: 'weekly' | 'monthly' | 'all-time' = '
           if (entry.user_id && entry.user) {
             const existing = userPointsMap.get(entry.user_id);
             if (existing) {
-              existing.total_points += entry.points || 0;
+              existing.total_points += entry.change || 0;
             } else {
               userPointsMap.set(entry.user_id, {
                 user: entry.user,
-                total_points: entry.points || 0,
+                total_points: entry.change || 0,
               });
             }
           }
@@ -398,6 +398,25 @@ export function useLeaderboard(timeFilter: 'weekly' | 'monthly' | 'all-time' = '
 
   useEffect(() => {
     fetchLeaderboard();
+
+    // Set up real-time subscription for leaderboard updates
+    const subscription = supabase
+      .channel('leaderboard_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'points_log' }, (payload) => {
+        console.log('Leaderboard: points_log changed', payload);
+        fetchLeaderboard();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'users' }, (payload) => {
+        console.log('Leaderboard: users changed', payload);
+        fetchLeaderboard();
+      })
+      .subscribe((status) => {
+        console.log('Leaderboard subscription status:', status);
+      });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [fetchLeaderboard]);
 
   return { leaderboard, loading, error, refetch: fetchLeaderboard };
@@ -410,6 +429,20 @@ export function useUserProfile(userId?: string) {
   const [points, setPoints] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const fetchPoints = useCallback(async (uid: string) => {
+    // Fetch latest points
+    const { data: pointsData } = await supabase
+      .from('points_log')
+      .select('balance_snapshot')
+      .eq('user_id', uid)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    const newPoints = (pointsData as any)?.[0]?.balance_snapshot || 0;
+    console.log('Fetched points:', newPoints);
+    setPoints(newPoints);
+  }, []);
 
   const fetchProfile = useCallback(async () => {
     if (!userId) {
@@ -441,28 +474,61 @@ export function useUserProfile(userId?: string) {
 
   async function fetchUserData(uid: string) {
     // Fetch badges
-    const { data: userBadges } = await supabase
+    const { data: userBadges, error: badgesError } = await supabase
       .from('user_badges')
-      .select('badge:badges(*)')
+      .select('badge:badges(*), awarded_at')
       .eq('user_id', uid);
 
-    setBadges((userBadges as any)?.map((ub: any) => ub.badge).filter(Boolean) || []);
+    if (badgesError) {
+      console.error('Error fetching user badges:', badgesError);
+    } else {
+      console.log('Fetched user badges:', userBadges);
+    }
+
+    const earnedBadges = (userBadges as any)?.map((ub: any) => ub.badge).filter(Boolean) || [];
+    console.log('Earned badges:', earnedBadges);
+    setBadges(earnedBadges);
 
     // Fetch latest points
-    const { data: pointsData } = await supabase
-      .from('points_log')
-      .select('balance_snapshot')
-      .eq('user_id', uid)
-      .order('created_at', { ascending: false })
-      .limit(1);
-
-    setPoints((pointsData as any)?.[0]?.balance_snapshot || 0);
+    await fetchPoints(uid);
     setLoading(false);
   }
 
   useEffect(() => {
     fetchProfile();
-  }, [fetchProfile]);
+
+    // Set up real-time subscription for points updates
+    if (userId) {
+      const channelName = `profile_points_${userId}_${Date.now()}`;
+      console.log('Setting up realtime subscription for points:', channelName);
+      
+      const subscription = supabase
+        .channel(channelName)
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'points_log',
+          filter: `user_id=eq.${userId}`,
+        }, (payload) => {
+          console.log('Points log change detected:', payload);
+          // Directly update points from the payload for instant update
+          if (payload.new && typeof (payload.new as any).balance_snapshot === 'number') {
+            setPoints((payload.new as any).balance_snapshot);
+          } else {
+            // Fallback to fetching
+            fetchPoints(userId);
+          }
+        })
+        .subscribe((status) => {
+          console.log('Subscription status:', status);
+        });
+
+      return () => {
+        console.log('Unsubscribing from:', channelName);
+        subscription.unsubscribe();
+      };
+    }
+  }, [fetchProfile, fetchPoints, userId]);
 
   return { user, badges, points, loading, error, refetch: fetchProfile };
 }
@@ -526,22 +592,159 @@ export function useStats(userId?: string) {
   return { stats, loading };
 }
 
+// Badge checking and awarding function
+export async function checkAndAwardBadges(userId: string): Promise<Badge[]> {
+  const newBadges: Badge[] = [];
+  
+  try {
+    // Get all badges
+    const { data: allBadges } = await supabase.from('badges').select('*');
+    if (!allBadges) return [];
+
+    // Get user's existing badges
+    const { data: userBadges } = await supabase
+      .from('user_badges')
+      .select('badge_id')
+      .eq('user_id', userId);
+    
+    const earnedBadgeIds = new Set((userBadges || []).map((ub: any) => ub.badge_id));
+
+    // Get user's report count
+    const { count: reportCount } = await supabase
+      .from('reports')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId);
+
+    // Get user's cleanup count
+    const { count: cleanupCount } = await supabase
+      .from('reports')
+      .select('*', { count: 'exact', head: true })
+      .eq('assigned_cleaner_id', userId)
+      .eq('status', 'cleaned');
+
+    // Get user's points
+    const { data: pointsData } = await supabase
+      .from('points_log')
+      .select('balance_snapshot')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1);
+    
+    const userPoints = (pointsData as any)?.[0]?.balance_snapshot || 0;
+
+    // Get report details for special badges
+    const { data: reportDetails } = await supabase
+      .from('reports')
+      .select('category, severity, photos, description, created_at')
+      .eq('user_id', userId);
+
+    const reports = reportDetails || [];
+    
+    // Badge criteria mapping
+    const badgeCriteria: Record<string, () => boolean> = {
+      'First Report': () => (reportCount || 0) >= 1,
+      '5 Reports': () => (reportCount || 0) >= 5,
+      '10 Reports': () => (reportCount || 0) >= 10,
+      'Eco Warrior': () => (reportCount || 0) >= 25,
+      'Lake Champion': () => (reportCount || 0) >= 50,
+      'Environmental Legend': () => (reportCount || 0) >= 100,
+      '100 Points Club': () => userPoints >= 100,
+      'Point Master': () => userPoints >= 500,
+      'Point Legend': () => userPoints >= 1000,
+      'Cleanup Hero': () => (cleanupCount || 0) >= 5,
+      'Lake Guardian': () => (cleanupCount || 0) >= 10,
+      'Super Cleaner': () => (cleanupCount || 0) >= 10,
+      'Master Cleaner': () => (cleanupCount || 0) >= 25,
+      'Early Bird': () => {
+        return reports.some((r: any) => {
+          const hour = new Date(r.created_at).getHours();
+          return hour < 8;
+        });
+      },
+      'Night Owl': () => {
+        return reports.some((r: any) => {
+          const hour = new Date(r.created_at).getHours();
+          return hour >= 22;
+        });
+      },
+      'Photo Pro': () => {
+        const reportsWithPhotos = reports.filter((r: any) => r.photos && r.photos.length > 0);
+        return reportsWithPhotos.length >= 10;
+      },
+      'Detail Detective': () => {
+        const detailedReports = reports.filter((r: any) => r.description && r.description.length >= 50);
+        return detailedReports.length >= 10;
+      },
+      'Severity Expert': () => {
+        const severities = new Set(reports.map((r: any) => r.severity));
+        return severities.size >= 5; // All 5 severity levels
+      },
+      'Category Master': () => {
+        const categories = new Set(reports.map((r: any) => r.category));
+        return categories.size >= 6; // All 6 categories
+      },
+    };
+
+    // Check each badge
+    for (const badge of allBadges as Badge[]) {
+      // Skip if already earned
+      if (earnedBadgeIds.has(badge.id)) continue;
+
+      // Check if criteria met
+      const checkFn = badgeCriteria[badge.name];
+      if (checkFn && checkFn()) {
+        // Award badge
+        const { error } = await (supabase.from('user_badges') as any).insert({
+          user_id: userId,
+          badge_id: badge.id,
+        });
+
+        if (!error) {
+          newBadges.push(badge);
+          console.log(`Badge awarded: ${badge.name}`);
+        } else {
+          console.error(`Failed to award badge ${badge.name}:`, error);
+        }
+      }
+    }
+
+    return newBadges;
+  } catch (err) {
+    console.error('Error checking badges:', err);
+    return [];
+  }
+}
+
 // Fetch badges
 export function useBadges() {
   const [badges, setBadges] = useState<Badge[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchBadges() {
-      const { data } = await supabase.from('badges').select('*');
-      setBadges((data as any) || []);
-      setLoading(false);
+      try {
+        const { data, error: queryError } = await supabase.from('badges').select('*');
+        
+        if (queryError) {
+          console.error('Error fetching badges:', queryError);
+          setError(queryError.message);
+        } else {
+          console.log('Fetched all badges:', data);
+          setBadges((data as any) || []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch badges:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch badges');
+      } finally {
+        setLoading(false);
+      }
     }
 
     fetchBadges();
   }, []);
 
-  return { badges, loading };
+  return { badges, loading, error };
 }
 
 // Fetch cleanups
@@ -675,11 +878,40 @@ export function useSubmitReport() {
 
       if (insertError) throw insertError;
 
-      return { success: true };
+      // Award points for submitting a report (10 points base + severity bonus)
+      const pointsEarned = 10 + (data.severity * 2);
+      
+      // Get current balance
+      const { data: currentPoints } = await supabase
+        .from('points_log')
+        .select('balance_snapshot')
+        .eq('user_id', data.user_id)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      const currentBalance = (currentPoints as any)?.[0]?.balance_snapshot || 0;
+      const newBalance = currentBalance + pointsEarned;
+
+      // Insert points log entry
+      const { error: pointsError } = await (supabase.from('points_log') as any).insert({
+        user_id: data.user_id,
+        change: pointsEarned,
+        reason: `Report submitted: ${data.lake_name || 'Unknown Lake'}`,
+        balance_snapshot: newBalance,
+      });
+
+      if (pointsError) {
+        console.error('Failed to award points:', pointsError);
+      }
+
+      // Check for new badges
+      const newBadges = await checkAndAwardBadges(data.user_id);
+
+      return { success: true, pointsEarned, newBadges };
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to submit report';
       setError(message);
-      return { success: false, error: message };
+      return { success: false, error: message, newBadges: [] };
     } finally {
       setLoading(false);
     }
@@ -879,7 +1111,26 @@ export function useRedemptions(userId?: string) {
 
   useEffect(() => {
     fetchRedemptions();
-  }, [fetchRedemptions]);
+
+    // Set up real-time subscription for redemptions
+    if (userId) {
+      const subscription = supabase
+        .channel(`redemptions_${userId}`)
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'redemptions',
+          filter: `user_id=eq.${userId}`,
+        }, () => {
+          fetchRedemptions();
+        })
+        .subscribe();
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
+  }, [fetchRedemptions, userId]);
 
   return { redemptions, loading, error, refetch: fetchRedemptions };
 }

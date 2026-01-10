@@ -89,15 +89,15 @@ export default function LeaderboardScreen() {
           <View style={[styles.podiumItem, styles.podiumSecond]}>
             <View style={[styles.podiumPedestal, styles.pedestalSecond]}>
               <Avatar
-                name={topThree[1]?.user.name || 'A'}
+                name={topThree[1]?.user?.name || 'Anonymous'}
                 size={52}
                 badge="🥈"
               />
               <Text style={styles.podiumName} numberOfLines={1}>
-                {topThree[1]?.user.name || 'Anonymous'}
+                {topThree[1]?.user?.name || 'Anonymous'}
               </Text>
               <View style={styles.pointsBadge}>
-                <Text style={styles.podiumPoints}>{topThree[1]?.total_points}</Text>
+                <Text style={styles.podiumPoints}>{topThree[1]?.total_points ?? 0}</Text>
               </View>
               <Text style={styles.rankNumber}>2</Text>
             </View>
@@ -110,16 +110,16 @@ export default function LeaderboardScreen() {
             </View>
             <View style={[styles.podiumPedestal, styles.pedestalFirst]}>
               <Avatar
-                name={topThree[0]?.user.name || 'A'}
+                name={topThree[0]?.user?.name || 'Anonymous'}
                 size={68}
                 badge="🥇"
               />
               <Text style={[styles.podiumName, styles.podiumNameFirst]} numberOfLines={1}>
-                {topThree[0]?.user.name || 'Anonymous'}
+                {topThree[0]?.user?.name || 'Anonymous'}
               </Text>
               <View style={[styles.pointsBadge, styles.pointsBadgeFirst]}>
                 <Text style={[styles.podiumPoints, styles.podiumPointsFirst]}>
-                  {topThree[0]?.total_points}
+                  {topThree[0]?.total_points ?? 0}
                 </Text>
               </View>
               <Text style={[styles.rankNumber, styles.rankNumberFirst]}>1</Text>
@@ -130,15 +130,15 @@ export default function LeaderboardScreen() {
           <View style={[styles.podiumItem, styles.podiumThird]}>
             <View style={[styles.podiumPedestal, styles.pedestalThird]}>
               <Avatar
-                name={topThree[2]?.user.name || 'A'}
+                name={topThree[2]?.user?.name || 'Anonymous'}
                 size={48}
                 badge="🥉"
               />
               <Text style={styles.podiumName} numberOfLines={1}>
-                {topThree[2]?.user.name || 'Anonymous'}
+                {topThree[2]?.user?.name || 'Anonymous'}
               </Text>
               <View style={styles.pointsBadge}>
-                <Text style={styles.podiumPoints}>{topThree[2]?.total_points}</Text>
+                <Text style={styles.podiumPoints}>{topThree[2]?.total_points ?? 0}</Text>
               </View>
               <Text style={styles.rankNumber}>3</Text>
             </View>
@@ -182,7 +182,7 @@ export default function LeaderboardScreen() {
       ) : (
         <FlatList
           data={restOfList}
-          keyExtractor={(item) => item.user.id}
+          keyExtractor={(item, index) => item.user?.id || `user-${index}`}
           renderItem={({ item, index }) => (
             <LeaderboardItem
               rank={index + 4}

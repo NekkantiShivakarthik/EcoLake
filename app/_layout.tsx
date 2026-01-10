@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import { ToastProvider } from '@/components/ui';
+import { BadgeNotificationProvider } from '@/components/ui/badge-notification';
 import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider, useTheme } from '@/contexts/theme-context';
 
@@ -18,11 +19,13 @@ function RootLayoutContent() {
   return (
     <NavigationThemeProvider value={actualTheme === 'dark' ? DarkTheme : DefaultTheme}>
       <ToastProvider>
-        <Stack>
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-        </Stack>
+        <BadgeNotificationProvider>
+          <Stack>
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+          </Stack>
+        </BadgeNotificationProvider>
       </ToastProvider>
       <StatusBar style={actualTheme === 'dark' ? 'light' : 'dark'} />
     </NavigationThemeProvider>

@@ -13,6 +13,7 @@ export { CardSkeleton, Skeleton } from './skeleton';
 export { CircularProgress, ProgressBar, StepsProgress } from './progress';
 
 // Feedback components
+export { BadgeNotification, BadgeNotificationProvider, useBadgeNotification } from './badge-notification';
 export { EmptyState, ErrorState, LoadingState, SuccessState } from './empty-state';
 export { ConfirmModal, Modal } from './modal';
 export { Toast, ToastProvider, useToast } from './toast';
