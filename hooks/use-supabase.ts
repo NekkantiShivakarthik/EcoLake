@@ -510,13 +510,30 @@ export function useUserProfile(userId?: string) {
           table: 'points_log',
           filter: `user_id=eq.${userId}`,
         }, (payload) => {
-          console.log('Points log change detected:', payload);
+          console.log('Points log INSERT detected:', payload);
           // Directly update points from the payload for instant update
           if (payload.new && typeof (payload.new as any).balance_snapshot === 'number') {
+            console.log('Updating points to:', (payload.new as any).balance_snapshot);
             setPoints((payload.new as any).balance_snapshot);
           } else {
             // Fallback to fetching
             fetchPoints(userId);
+          }
+        })
+        .on('postgres_changes', {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'users',
+          filter: `id=eq.${userId}`,
+        }, (payload) => {
+          console.log('User UPDATE detected:', payload);
+          // Update user and points if points changed
+          if (payload.new) {
+            setUser(payload.new as User);
+            if (typeof (payload.new as any).points === 'number') {
+              console.log('Updating points from user table to:', (payload.new as any).points);
+              setPoints((payload.new as any).points);
+            }
           }
         })
         .subscribe((status) => {

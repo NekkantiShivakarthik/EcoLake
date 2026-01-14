@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
     Alert,
     RefreshControl,
@@ -23,11 +24,18 @@ import { useBadges, useReports, useUserProfile } from '@/hooks/use-supabase';
 
 export default function ProfileScreen() {
   const { user: authUser, signOut } = useAuth();
-  const { theme, actualTheme, setTheme } = useTheme();
+  const { theme, actualTheme, setTheme, colors } = useTheme();
   const { user, badges: earnedBadges, points, loading, refetch: refetchProfile } = useUserProfile(authUser?.id);
   const { badges: allBadges } = useBadges();
   const { reports, refetch: refetchReports } = useReports();
   const [refreshing, setRefreshing] = useState(false);
+
+  // Refresh data when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      refetchProfile();
+    }, [refetchProfile])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -57,8 +65,11 @@ export default function ProfileScreen() {
     );
   };
 
+  // Use points from points_log (real-time) with fallback to user.points
+  const totalPoints = points || user?.points || 0;
+
   const stats = [
-    { label: 'Total Points', value: user?.points || points, icon: 'star', color: '#FFB800' },
+    { label: 'Total Points', value: totalPoints, icon: 'star', color: '#FFB800' },
     { label: 'Reports Made', value: userReports.length, icon: 'document-text', color: EcoColors.primary },
     { label: 'Lakes Helped', value: cleanedReports, icon: 'water', color: '#4FC3F7' },
     { label: 'Badges Earned', value: earnedBadges.length, icon: 'trophy', color: '#9C27B0' },
@@ -76,13 +87,12 @@ export default function ProfileScreen() {
   ];
 
   // Calculate level progress
-  const totalPoints = user?.points || points;
   const currentLevel = Math.floor(totalPoints / 500) + 1;
   const levelProgress = (totalPoints % 500) / 500;
   const pointsToNextLevel = 500 - (totalPoints % 500);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       <ScrollView 
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -138,13 +148,13 @@ export default function ProfileScreen() {
           <View style={styles.levelHeader}>
             <View style={styles.levelBadge}>
               <Ionicons name="ribbon" size={20} color={EcoColors.accent} />
-              <Text style={styles.levelText}>Level {currentLevel}</Text>
+              <Text style={[styles.levelText, { color: colors.text }]}>Level {currentLevel}</Text>
             </View>
-            <Text style={styles.pointsText}>{points.toLocaleString()} pts</Text>
+            <Text style={styles.pointsText}>{totalPoints.toLocaleString()} pts</Text>
           </View>
           <View style={styles.levelProgress}>
-            <ProgressBar progress={levelProgress} color={EcoColors.accent} />
-            <Text style={styles.levelHint}>{pointsToNextLevel} pts to Level {currentLevel + 1}</Text>
+            <ProgressBar progress={levelProgress * 100} color={EcoColors.accent} />
+            <Text style={[styles.levelHint, { color: colors.textSecondary }]}>{pointsToNextLevel} pts to Level {currentLevel + 1}</Text>
           </View>
           <TouchableOpacity 
             style={styles.redeemButton}
@@ -170,8 +180,8 @@ export default function ProfileScreen() {
               <View style={[styles.statIconContainer, { backgroundColor: stat.color + '20' }]}>
                 <Ionicons name={stat.icon as any} size={24} color={stat.color} />
               </View>
-              <Text style={styles.statValue}>{stat.value}</Text>
-              <Text style={styles.statLabel}>{stat.label}</Text>
+              <Text style={[styles.statValue, { color: colors.text }]}>{stat.value}</Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{stat.label}</Text>
             </Card>
           ))}
         </View>
@@ -179,8 +189,8 @@ export default function ProfileScreen() {
         {/* Badges Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Badges</Text>
-            <TouchableOpacity>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Badges</Text>
+            <TouchableOpacity onPress={() => router.push('/badges')}>
               <Text style={styles.seeAllText}>See All</Text>
             </TouchableOpacity>
           </View>
@@ -201,17 +211,17 @@ export default function ProfileScreen() {
 
         {/* Recent Activity */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Recent Activity</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Recent Activity</Text>
           <Card variant="outlined" style={styles.activityCard}>
             {userReports.slice(0, 3).length > 0 ? (
               userReports.slice(0, 3).map((report, index) => (
-                <View key={report.id} style={styles.activityItem}>
+                <View key={report.id} style={[styles.activityItem, { borderBottomColor: colors.border }]}>
                   <View style={styles.activityDot} />
                   <View style={styles.activityContent}>
-                    <Text style={styles.activityText}>
+                    <Text style={[styles.activityText, { color: colors.text }]}>
                       Reported {report.category} pollution
                     </Text>
-                    <Text style={styles.activityDate}>
+                    <Text style={[styles.activityDate, { color: colors.textSecondary }]}>
                       {report.lake?.name} •{' '}
                       {new Date(report.created_at || '').toLocaleDateString()}
                     </Text>
@@ -229,7 +239,7 @@ export default function ProfileScreen() {
             ) : (
               <View style={styles.emptyActivity}>
                 <Text style={styles.emptyIcon}>📭</Text>
-                <Text style={styles.emptyText}>No recent activity</Text>
+                <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No recent activity</Text>
               </View>
             )}
           </Card>
@@ -243,15 +253,15 @@ export default function ProfileScreen() {
                 key={index}
                 style={[
                   styles.menuItem,
-                  index < menuItems.length - 1 && styles.menuItemBorder,
+                  index < menuItems.length - 1 && [styles.menuItemBorder, { borderBottomColor: colors.border }],
                 ]}
                 onPress={item.action}
               >
-                <View style={styles.menuIconContainer}>
-                  <Ionicons name={item.icon as any} size={20} color={EcoColors.primary} />
+                <View style={[styles.menuIconContainer, { backgroundColor: colors.primary + '20' }]}>
+                  <Ionicons name={item.icon as any} size={20} color={colors.primary} />
                 </View>
-                <Text style={styles.menuLabel}>{item.label}</Text>
-                <Ionicons name="chevron-forward" size={20} color={EcoColors.gray400} />
+                <Text style={[styles.menuLabel, { color: colors.text }]}>{item.label}</Text>
+                <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
               </TouchableOpacity>
             ))}
           </Card>
@@ -353,7 +363,7 @@ const styles = StyleSheet.create({
   levelText: {
     fontSize: 16,
     fontWeight: '700',
-    color: EcoColors.gray800,
+    color: undefined, // Set dynamically
   },
   pointsText: {
     fontSize: 18,
@@ -409,7 +419,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: EcoColors.gray900,
+    color: undefined, // Set dynamically
   },
   statLabel: {
     fontSize: 12,
@@ -430,7 +440,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: EcoColors.gray800,
+    color: undefined, // Set dynamically
     paddingHorizontal: 20,
     marginBottom: 12,
   },
@@ -467,7 +477,7 @@ const styles = StyleSheet.create({
   activityText: {
     fontSize: 14,
     fontWeight: '500',
-    color: EcoColors.gray800,
+    color: undefined, // Set dynamically
   },
   activityDate: {
     fontSize: 12,
@@ -524,7 +534,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     fontWeight: '500',
-    color: EcoColors.gray800,
+    color: undefined, // Set dynamically
   },
   signOutButton: {
     flexDirection: 'row',
