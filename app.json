@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "EcoLake",
-    "slug": "EcoLake",
+    "slug": "eco-lake",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -43,6 +43,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "20ec654b-b37e-41bc-a98e-54ee714bfb97"
+      }
+    },
+    "owner": "codebusters-organization6969"
   }
 }

@@ -2,22 +2,22 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import React, { useEffect, useState } from 'react';
 import {
-    Dimensions,
-    Modal,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import Animated, {
-    FadeIn,
-    FadeOut,
-    useAnimatedStyle,
-    useSharedValue,
-    withRepeat,
-    withSequence,
-    withSpring,
-    withTiming,
+  FadeIn,
+  FadeOut,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 
 import { EcoColors } from '@/constants/colors';
@@ -57,7 +57,7 @@ export function BadgeNotification({ badge, visible, onClose }: BadgeNotification
     } else {
       scale.value = withTiming(0, { duration: 200 });
     }
-  }, [visible]);
+  }, [visible, rotation, scale, sparkle]);
 
   const badgeAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
@@ -113,7 +113,7 @@ export function BadgeNotification({ badge, visible, onClose }: BadgeNotification
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.congratsText}>🏆 CONGRATULATIONS! 🏆</Text>
-            <Text style={styles.subTitle}>You've earned a new badge!</Text>
+            <Text style={styles.subTitle}>{`You've earned a new badge!`}</Text>
           </View>
 
           {/* Badge */}

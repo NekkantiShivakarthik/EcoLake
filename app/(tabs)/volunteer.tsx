@@ -51,7 +51,6 @@ export default function VolunteerWorkScreen() {
   const [proofPhotos, setProofPhotos] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
   const [uploading, setUploading] = useState(false);
-  const [showStatusUpdate, setShowStatusUpdate] = useState(false);
 
   const fetchReports = async () => {
     try {
@@ -473,7 +472,7 @@ export default function VolunteerWorkScreen() {
                 </View>
                 <View style={styles.stepContent}>
                   <Text style={styles.stepTitle}>Claim a Report</Text>
-                  <Text style={styles.stepDescription}>Browse available reports and tap "Claim Report"</Text>
+                  <Text style={styles.stepDescription}>{`Browse available reports and tap "Claim Report"`}</Text>
                 </View>
               </View>
               <View style={styles.guideStep}>

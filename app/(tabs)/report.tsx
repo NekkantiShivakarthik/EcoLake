@@ -54,7 +54,7 @@ export default function ReportScreen() {
   // Auto-capture location on mount
   React.useEffect(() => {
     getCurrentLocation();
-  }, []);
+  }, [getCurrentLocation]);
   
   // Filter lakes based on search query
   const filteredLakes = React.useMemo(() => {
@@ -70,7 +70,7 @@ export default function ReportScreen() {
   const hasFilteredLakes = filteredLakes.length > 0;
   const hasLocation = location !== null;
 
-  const selectedLakeData = nearbyLakes.find((l: any) => l.id === selectedLake?.id);
+  // selectedLakeData removed (unused)
 
   const showImagePickerOptions = () => {
     if (Platform.OS === 'ios') {
@@ -317,9 +317,7 @@ export default function ReportScreen() {
               <Card variant="outlined" style={styles.noLakesCard}>
                 <Text style={styles.noLakesIcon}>🔍</Text>
                 <Text style={styles.noLakesTitle}>No matches found</Text>
-                <Text style={styles.noLakesText}>
-                  No lakes match "{searchQuery}". Try a different search term.
-                </Text>
+                <Text style={styles.noLakesText}>{`No lakes match "${searchQuery}". Try a different search term.`}</Text>
                 <TouchableOpacity
                   style={styles.showAllButton}
                   onPress={() => setSearchQuery('')}

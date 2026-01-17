@@ -1,9 +1,9 @@
 import React from 'react';
 import { StyleSheet, Text, View, ViewStyle } from 'react-native';
 import Animated, {
-    useAnimatedStyle,
-    useSharedValue,
-    withTiming,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from 'react-native-reanimated';
 
 import { EcoColors } from '@/constants/colors';
@@ -76,9 +76,7 @@ export function CircularProgress({
   backgroundColor = EcoColors.gray200,
   children,
 }: CircularProgressProps) {
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
+  // radius/circumference not needed for the current view-based circular progress implementation
 
   return (
     <View style={[styles.circularContainer, { width: size, height: size }]}>

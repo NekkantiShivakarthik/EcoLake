@@ -50,7 +50,7 @@ export default function LeaderboardScreen() {
       >
         <View style={styles.header}>
           <Text style={styles.title}>🏆 Leaderboard</Text>
-          <Text style={styles.subtitle}>See who's making the biggest impact</Text>
+          <Text style={styles.subtitle}>{`See who's making the biggest impact`}</Text>
         </View>
 
         {/* Time Filters */}

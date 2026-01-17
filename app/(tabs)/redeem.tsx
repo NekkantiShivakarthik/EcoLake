@@ -29,17 +29,17 @@ const categories: { key: CategoryType; label: string; icon: string }[] = [
 
 export default function RedeemScreen() {
   const { user } = useAuth();
-  const { points, loading: profileLoading, refetch: refetchProfile } = useUserProfile(user?.id);
+  const { points, refetch: refetchProfile } = useUserProfile(user?.id);
   const [activeCategory, setActiveCategory] = useState<CategoryType>('all');
   const [activeTab, setActiveTab] = useState<'available' | 'history'>('available');
   const [searchQuery, setSearchQuery] = useState('');
-  const { rewards, loading: rewardsLoading, refetch: refetchRewards } = useRewards(
+  const { rewards, refetch: refetchRewards } = useRewards(
     activeCategory
   );
-  const { redemptions, loading: redemptionsLoading, refetch: refetchRedemptions } = useRedemptions(
+  const { redemptions, refetch: refetchRedemptions } = useRedemptions(
     user?.id
   );
-  const { redeemReward, loading: redeeming } = useRedeemReward();
+  const { redeemReward } = useRedeemReward();
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = async () => {

@@ -1,4 +1,3 @@
-export { ErrorBoundary } from 'expo-router';
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -8,6 +7,7 @@ import { ToastProvider } from '@/components/ui';
 import { BadgeNotificationProvider } from '@/components/ui/badge-notification';
 import { AuthProvider } from '@/contexts/auth-context';
 import { ThemeProvider, useTheme } from '@/contexts/theme-context';
+export { ErrorBoundary } from 'expo-router';
 
 export const unstable_settings = {
   anchor: '(tabs)',

@@ -24,8 +24,8 @@ import { useBadges, useReports, useUserProfile } from '@/hooks/use-supabase';
 
 export default function ProfileScreen() {
   const { user: authUser, signOut } = useAuth();
-  const { theme, actualTheme, setTheme, colors } = useTheme();
-  const { user, badges: earnedBadges, points, loading, refetch: refetchProfile } = useUserProfile(authUser?.id);
+  const { actualTheme, setTheme, colors } = useTheme();
+  const { user, badges: earnedBadges, points, refetch: refetchProfile } = useUserProfile(authUser?.id);
   const { badges: allBadges } = useBadges();
   const { reports, refetch: refetchReports } = useReports();
   const [refreshing, setRefreshing] = useState(false);

@@ -56,13 +56,9 @@ export default function ForgotPasswordScreen() {
         <View style={styles.successContainer}>
           <Text style={styles.successIcon}>📧</Text>
           <Text style={styles.successTitle}>Check Your Email</Text>
-          <Text style={styles.successText}>
-            We've sent a password reset link to:
-          </Text>
+          <Text style={styles.successText}>{`We've sent a password reset link to:`}</Text>
           <Text style={styles.emailText}>{email}</Text>
-          <Text style={styles.successSubtext}>
-            Click the link in the email to reset your password. If you don't see it, check your spam folder.
-          </Text>
+          <Text style={styles.successSubtext}>{`Click the link in the email to reset your password. If you don't see it, check your spam folder.`}</Text>
           
           <Button
             title="Back to Login"
@@ -107,9 +103,7 @@ export default function ForgotPasswordScreen() {
           <View style={styles.header}>
             <Text style={styles.icon}>🔐</Text>
             <Text style={styles.title}>Forgot Password?</Text>
-            <Text style={styles.subtitle}>
-              No worries! Enter your email and we'll send you a reset link.
-            </Text>
+            <Text style={styles.subtitle}>{`No worries! Enter your email and we'll send you a reset link.`}</Text>
           </View>
 
           {/* Reset Card */}

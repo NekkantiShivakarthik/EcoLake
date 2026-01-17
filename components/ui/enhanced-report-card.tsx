@@ -4,7 +4,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import {
     Alert,
-    Dimensions,
     GestureResponderEvent,
     Modal,
     Pressable,
@@ -24,7 +23,7 @@ import { Lake, Report, User } from '@/types/database';
 import { Card } from './card';
 import { StatusChip } from './chip';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+// SCREEN_WIDTH not needed here
 
 interface EnhancedReportCardProps {
   report: Report & { lake?: Lake | null; user?: User | null };

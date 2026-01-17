@@ -22,7 +22,7 @@ import { useReports, useUserProfile } from '@/hooks/use-supabase';
 export default function ActivityHistoryScreen() {
   const { user: authUser } = useAuth();
   const { user } = useUserProfile(authUser?.id);
-  const { reports, loading: reportsLoading, refetch } = useReports();
+  const { reports, refetch } = useReports();
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<'all' | 'reports' | 'points' | 'rewards'>('all');
 
@@ -36,7 +36,7 @@ export default function ActivityHistoryScreen() {
 
   // Generate activity timeline from user data
   const getActivities = () => {
-    const activities: Array<{
+    const activities: {
       id: string;
       icon: keyof typeof Ionicons.glyphMap;
       title: string;
@@ -45,7 +45,7 @@ export default function ActivityHistoryScreen() {
       points?: number;
       status: 'success' | 'pending' | 'failed';
       date: Date;
-    }> = [];
+    }[] = [];
 
     // Add report activities
     userReports.forEach((report) => {
@@ -233,8 +233,21 @@ export default function ActivityHistoryScreen() {
             icon="time"
             title="No Activity Yet"
             description="Start reporting pollution to see your activity here"
-            actionLabel="Report Pollution"
-            onAction={() => router.push('/(tabs)/report')}
+            action={
+              <TouchableOpacity
+                style={{
+                  marginTop: 16,
+                  backgroundColor: EcoColors.primary,
+                  paddingHorizontal: 20,
+                  paddingVertical: 10,
+                  borderRadius: 20,
+                  alignSelf: 'center',
+                }}
+                onPress={() => router.push('/(tabs)/report')}
+              >
+                <Text style={{ color: EcoColors.white, fontWeight: '600' }}>Report Now</Text>
+              </TouchableOpacity>
+            }
           />
         )}
       </ScrollView>

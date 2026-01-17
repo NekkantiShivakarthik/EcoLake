@@ -2,16 +2,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  Modal,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    Modal,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -49,7 +49,7 @@ interface Volunteer {
 
 export default function ManageScreen() {
   const { user } = useAuth();
-  const { theme, actualTheme, setTheme } = useTheme();
+  const { actualTheme, setTheme } = useTheme();
   const [reports, setReports] = useState<Report[]>([]);
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,7 +59,7 @@ export default function ManageScreen() {
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [filter, setFilter] = useState<'all' | 'submitted' | 'verified' | 'assigned' | 'in_progress'>('all');
 
-  const fetchData = async () => {
+  const fetchData = React.useCallback(async () => {
     try {
       setLoading(true);
 
@@ -99,11 +99,11 @@ export default function ManageScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [filter]);
 
   useEffect(() => {
     fetchData();
-  }, [filter]);
+  }, [fetchData]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -114,8 +114,8 @@ export default function ManageScreen() {
     if (!selectedReport) return;
 
     try {
-      const { error } = await supabase
-        .from('reports')
+      const { error } = await (supabase
+        .from('reports') as any)
         .update({
           assigned_cleaner_id: volunteerId,
           status: 'assigned',
@@ -144,8 +144,8 @@ export default function ManageScreen() {
         updates.status = 'verified';
       }
 
-      const { error } = await supabase
-        .from('reports')
+      const { error } = await (supabase
+        .from('reports') as any)
         .update(updates)
         .eq('id', selectedReport.id);
 
@@ -300,7 +300,7 @@ export default function ManageScreen() {
             <Card key={report.id} style={styles.reportCard} variant="elevated">
               <View style={styles.reportHeader}>
                 <View style={styles.reportHeaderLeft}>
-                  <StatusChip status={report.status} />
+                  <StatusChip status={report.status as any} />
                   <View style={styles.reportDateContainer}>
                     <Ionicons name="time-outline" size={12} color={EcoColors.gray500} />
                     <Text style={styles.reportDate}>

@@ -28,7 +28,7 @@ type ThemeOption = 'light' | 'dark' | 'system';
 
 export default function SettingsScreen() {
   const { user: authUser, refreshUser, signOut } = useAuth();
-  const { theme, setTheme, colors } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [name, setName] = useState(authUser?.name || '');
   const [email, setEmail] = useState(authUser?.email || '');
   const [loading, setLoading] = useState(false);
@@ -44,8 +44,8 @@ export default function SettingsScreen() {
 
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('users')
+      const { error } = await (supabase
+        .from('users') as any)
         .update({
           name: name.trim(),
           email: email.trim(),
@@ -115,8 +115,8 @@ export default function SettingsScreen() {
         .getPublicUrl(filePath);
 
       // Update user profile
-      const { error: updateError } = await supabase
-        .from('users')
+      const { error: updateError } = await (supabase
+        .from('users') as any)
         .update({ avatar_url: publicUrl })
         .eq('id', authUser.id);
 
