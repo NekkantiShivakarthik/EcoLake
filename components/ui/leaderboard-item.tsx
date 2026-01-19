@@ -1,4 +1,5 @@
 import { EcoColors } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 import { User } from '@/types/database';
 import { Image } from 'expo-image';
 import React from 'react';
@@ -12,6 +13,8 @@ interface LeaderboardItemProps {
 }
 
 export function LeaderboardItem({ rank, user, points }: LeaderboardItemProps) {
+  const { colors } = useTheme();
+  
   const getMedalEmoji = (rank: number) => {
     switch (rank) {
       case 1: return '🥇';
@@ -37,26 +40,26 @@ export function LeaderboardItem({ rank, user, points }: LeaderboardItemProps) {
         {medal ? (
           <Text style={styles.medal}>{medal}</Text>
         ) : (
-          <Text style={styles.rank}>#{rank}</Text>
+          <Text style={[styles.rank, { color: colors.textSecondary }]}>#{rank}</Text>
         )}
       </View>
 
       <Image
         source={userAvatar}
-        style={styles.avatar}
+        style={[styles.avatar, { backgroundColor: colors.surface }]}
         contentFit="cover"
       />
 
       <View style={styles.userInfo}>
-        <Text style={styles.name}>{userName}</Text>
+        <Text style={[styles.name, { color: colors.text }]}>{userName}</Text>
         <View style={styles.roleContainer}>
-          <Text style={styles.role}>{userRole}</Text>
+          <Text style={[styles.role, { color: colors.textSecondary }]}>{userRole}</Text>
         </View>
       </View>
 
       <View style={styles.pointsContainer}>
-        <Text style={styles.points}>{points ?? 0}</Text>
-        <Text style={styles.pointsLabel}>pts</Text>
+        <Text style={[styles.points, { color: colors.primary }]}>{points ?? 0}</Text>
+        <Text style={[styles.pointsLabel, { color: colors.textTertiary }]}>pts</Text>
       </View>
     </Card>
   );
@@ -84,13 +87,11 @@ const styles = StyleSheet.create({
   rank: {
     fontSize: 16,
     fontWeight: '600',
-    color: EcoColors.gray500,
   },
   avatar: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: EcoColors.gray200,
     marginLeft: 8,
   },
   userInfo: {
@@ -100,14 +101,12 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 15,
     fontWeight: '600',
-    color: EcoColors.gray800,
   },
   roleContainer: {
     marginTop: 2,
   },
   role: {
     fontSize: 12,
-    color: EcoColors.gray500,
     textTransform: 'capitalize',
   },
   pointsContainer: {
@@ -116,10 +115,8 @@ const styles = StyleSheet.create({
   points: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: EcoColors.primary,
   },
   pointsLabel: {
     fontSize: 11,
-    color: EcoColors.gray400,
   },
 });

@@ -1,9 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EcoColors } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 import { supabase } from '@/lib/supabase';
 import { Link, router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     Alert,
     KeyboardAvoidingView,
@@ -18,9 +19,155 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ForgotPasswordScreen() {
+  const { colors } = useTheme();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: EcoColors.primary,
+    },
+    flex: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      paddingHorizontal: 24,
+      paddingBottom: 40,
+    },
+    backLink: {
+      marginTop: 20,
+      marginBottom: 20,
+    },
+    backLinkText: {
+      fontSize: 15,
+      color: EcoColors.white,
+      fontWeight: '500',
+    },
+    header: {
+      alignItems: 'center',
+      marginBottom: 32,
+    },
+    icon: {
+      fontSize: 64,
+      marginBottom: 16,
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: 'bold',
+      color: EcoColors.white,
+      marginBottom: 8,
+    },
+    subtitle: {
+      fontSize: 15,
+      color: EcoColors.white,
+      opacity: 0.9,
+      textAlign: 'center',
+      lineHeight: 22,
+      paddingHorizontal: 20,
+    },
+    card: {
+      backgroundColor: colors.cardBackground,
+      borderRadius: 24,
+      padding: 24,
+    },
+    inputContainer: {
+      marginBottom: 20,
+    },
+    inputLabel: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.textSecondary,
+      marginBottom: 8,
+    },
+    input: {
+      backgroundColor: colors.surface,
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      fontSize: 16,
+      color: colors.text,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    resetButton: {
+      width: '100%',
+    },
+    infoContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 24,
+      gap: 8,
+    },
+    infoIcon: {
+      fontSize: 16,
+    },
+    infoText: {
+      fontSize: 14,
+      color: EcoColors.white,
+      opacity: 0.9,
+    },
+    infoLink: {
+      fontWeight: 'bold',
+      textDecorationLine: 'underline',
+    },
+    // Success screen styles
+    successContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: 32,
+    },
+    successIcon: {
+      fontSize: 80,
+      marginBottom: 24,
+    },
+    successTitle: {
+      fontSize: 28,
+      fontWeight: 'bold',
+      color: EcoColors.white,
+      marginBottom: 16,
+      textAlign: 'center',
+    },
+    successText: {
+      fontSize: 16,
+      color: EcoColors.white,
+      opacity: 0.9,
+      textAlign: 'center',
+      marginBottom: 8,
+    },
+    emailText: {
+      fontSize: 17,
+      fontWeight: '600',
+      color: EcoColors.white,
+      marginBottom: 16,
+      textAlign: 'center',
+    },
+    successSubtext: {
+      fontSize: 14,
+      color: EcoColors.white,
+      opacity: 0.8,
+      textAlign: 'center',
+      lineHeight: 20,
+      marginBottom: 32,
+    },
+    backButton: {
+      width: '100%',
+      marginBottom: 16,
+    },
+    resendButton: {
+      paddingVertical: 12,
+    },
+    resendText: {
+      fontSize: 15,
+      color: EcoColors.white,
+      fontWeight: '600',
+      textDecorationLine: 'underline',
+    },
+  }), [colors]);
 
   const handleResetPassword = async () => {
     if (!email.trim()) {
@@ -113,7 +260,7 @@ export default function ForgotPasswordScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="your@email.com"
-                placeholderTextColor={EcoColors.gray400}
+                placeholderTextColor={colors.textTertiary}
                 value={email}
                 onChangeText={setEmail}
                 autoCapitalize="none"
@@ -147,148 +294,3 @@ export default function ForgotPasswordScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: EcoColors.primary,
-  },
-  flex: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingBottom: 40,
-  },
-  backLink: {
-    marginTop: 20,
-    marginBottom: 20,
-  },
-  backLinkText: {
-    fontSize: 15,
-    color: EcoColors.white,
-    fontWeight: '500',
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  icon: {
-    fontSize: 64,
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: EcoColors.white,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 15,
-    color: EcoColors.white,
-    opacity: 0.9,
-    textAlign: 'center',
-    lineHeight: 22,
-    paddingHorizontal: 20,
-  },
-  card: {
-    backgroundColor: EcoColors.white,
-    borderRadius: 24,
-    padding: 24,
-  },
-  inputContainer: {
-    marginBottom: 20,
-  },
-  inputLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: EcoColors.gray700,
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: EcoColors.gray50,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: EcoColors.gray800,
-    borderWidth: 1,
-    borderColor: EcoColors.gray200,
-  },
-  resetButton: {
-    width: '100%',
-  },
-  infoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 24,
-    gap: 8,
-  },
-  infoIcon: {
-    fontSize: 16,
-  },
-  infoText: {
-    fontSize: 14,
-    color: EcoColors.white,
-    opacity: 0.9,
-  },
-  infoLink: {
-    fontWeight: 'bold',
-    textDecorationLine: 'underline',
-  },
-  // Success screen styles
-  successContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-  },
-  successIcon: {
-    fontSize: 80,
-    marginBottom: 24,
-  },
-  successTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: EcoColors.white,
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  successText: {
-    fontSize: 16,
-    color: EcoColors.white,
-    opacity: 0.9,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  emailText: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: EcoColors.white,
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  successSubtext: {
-    fontSize: 14,
-    color: EcoColors.white,
-    opacity: 0.8,
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 32,
-  },
-  backButton: {
-    width: '100%',
-    marginBottom: 16,
-  },
-  resendButton: {
-    paddingVertical: 12,
-  },
-  resendText: {
-    fontSize: 15,
-    color: EcoColors.white,
-    fontWeight: '600',
-    textDecorationLine: 'underline',
-  },
-});

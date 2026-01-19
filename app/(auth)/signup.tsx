@@ -1,9 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Logo } from '@/components/ui/logo';
 import { EcoColors } from '@/constants/colors';
 import { useAuth } from '@/contexts/auth-context';
+import { useTheme } from '@/contexts/theme-context';
 import { Link, router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     Alert,
     KeyboardAvoidingView,
@@ -27,6 +29,7 @@ const roles: { key: Role; label: string; icon: string; description: string }[] =
 
 export default function SignupScreen() {
   const { signUp } = useAuth();
+  const { colors } = useTheme();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -65,6 +68,136 @@ export default function SignupScreen() {
     }
   };
 
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: EcoColors.primary,
+    },
+    flex: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      paddingHorizontal: 24,
+      paddingBottom: 40,
+    },
+    header: {
+      alignItems: 'center',
+      paddingTop: 40,
+      paddingBottom: 24,
+    },
+    logoContainer: {
+      marginBottom: 8,
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: 'bold',
+      color: EcoColors.white,
+    },
+    subtitle: {
+      fontSize: 14,
+      color: EcoColors.white,
+      opacity: 0.9,
+      marginTop: 4,
+    },
+    card: {
+      backgroundColor: colors.cardBackground,
+      borderRadius: 24,
+      padding: 24,
+    },
+    sectionTitle: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.textSecondary,
+      marginBottom: 12,
+    },
+    rolesContainer: {
+      flexDirection: 'row',
+      gap: 10,
+      marginBottom: 24,
+    },
+    roleCard: {
+      flex: 1,
+      alignItems: 'center',
+      padding: 12,
+      borderRadius: 12,
+      backgroundColor: colors.surface,
+      borderWidth: 2,
+      borderColor: 'transparent',
+    },
+    roleCardActive: {
+      borderColor: EcoColors.primary,
+      backgroundColor: EcoColors.primaryLight + '20',
+    },
+    roleIcon: {
+      fontSize: 24,
+      marginBottom: 4,
+    },
+    roleLabel: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: colors.textSecondary,
+    },
+    roleLabelActive: {
+      color: EcoColors.primary,
+    },
+    roleDescription: {
+      fontSize: 9,
+      color: colors.textTertiary,
+      textAlign: 'center',
+      marginTop: 2,
+    },
+    inputContainer: {
+      marginBottom: 16,
+    },
+    inputLabel: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.textSecondary,
+      marginBottom: 8,
+    },
+    input: {
+      backgroundColor: colors.surface,
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      fontSize: 16,
+      color: colors.text,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    signUpButton: {
+      width: '100%',
+      marginTop: 8,
+    },
+    termsText: {
+      fontSize: 12,
+      color: colors.textTertiary,
+      textAlign: 'center',
+      marginTop: 16,
+      lineHeight: 18,
+    },
+    termsLink: {
+      color: EcoColors.primary,
+      fontWeight: '500',
+    },
+    signInContainer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      marginTop: 24,
+    },
+    signInText: {
+      fontSize: 14,
+      color: EcoColors.white,
+      opacity: 0.9,
+    },
+    signInLink: {
+      fontSize: 14,
+      fontWeight: 'bold',
+      color: EcoColors.white,
+    },
+  }), [colors]);
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
@@ -78,7 +211,9 @@ export default function SignupScreen() {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.logoEmoji}>🌊</Text>
+            <View style={styles.logoContainer}>
+              <Logo size="medium" showText={false} />
+            </View>
             <Text style={styles.title}>Join EcoLake</Text>
             <Text style={styles.subtitle}>Start making an impact today</Text>
           </View>
@@ -117,7 +252,7 @@ export default function SignupScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="John Doe"
-                placeholderTextColor={EcoColors.gray400}
+                placeholderTextColor={colors.textTertiary}
                 value={name}
                 onChangeText={setName}
                 autoCapitalize="words"
@@ -129,7 +264,7 @@ export default function SignupScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="your@email.com"
-                placeholderTextColor={EcoColors.gray400}
+                placeholderTextColor={colors.textTertiary}
                 value={email}
                 onChangeText={setEmail}
                 autoCapitalize="none"
@@ -142,7 +277,7 @@ export default function SignupScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="Min. 6 characters"
-                placeholderTextColor={EcoColors.gray400}
+                placeholderTextColor={colors.textTertiary}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
@@ -154,7 +289,7 @@ export default function SignupScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="••••••••"
-                placeholderTextColor={EcoColors.gray400}
+                placeholderTextColor={colors.textTertiary}
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 secureTextEntry
@@ -190,134 +325,3 @@ export default function SignupScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: EcoColors.primary,
-  },
-  flex: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingBottom: 40,
-  },
-  header: {
-    alignItems: 'center',
-    paddingTop: 40,
-    paddingBottom: 24,
-  },
-  logoEmoji: {
-    fontSize: 56,
-    marginBottom: 8,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: EcoColors.white,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: EcoColors.white,
-    opacity: 0.9,
-    marginTop: 4,
-  },
-  card: {
-    backgroundColor: EcoColors.white,
-    borderRadius: 24,
-    padding: 24,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: EcoColors.gray700,
-    marginBottom: 12,
-  },
-  rolesContainer: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 24,
-  },
-  roleCard: {
-    flex: 1,
-    alignItems: 'center',
-    padding: 12,
-    borderRadius: 12,
-    backgroundColor: EcoColors.gray50,
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  roleCardActive: {
-    borderColor: EcoColors.primary,
-    backgroundColor: EcoColors.primaryLight + '20',
-  },
-  roleIcon: {
-    fontSize: 24,
-    marginBottom: 4,
-  },
-  roleLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: EcoColors.gray700,
-  },
-  roleLabelActive: {
-    color: EcoColors.primary,
-  },
-  roleDescription: {
-    fontSize: 9,
-    color: EcoColors.gray500,
-    textAlign: 'center',
-    marginTop: 2,
-  },
-  inputContainer: {
-    marginBottom: 16,
-  },
-  inputLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: EcoColors.gray700,
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: EcoColors.gray50,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: EcoColors.gray800,
-    borderWidth: 1,
-    borderColor: EcoColors.gray200,
-  },
-  signUpButton: {
-    width: '100%',
-    marginTop: 8,
-  },
-  termsText: {
-    fontSize: 12,
-    color: EcoColors.gray500,
-    textAlign: 'center',
-    marginTop: 16,
-    lineHeight: 18,
-  },
-  termsLink: {
-    color: EcoColors.primary,
-    fontWeight: '500',
-  },
-  signInContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 24,
-  },
-  signInText: {
-    fontSize: 14,
-    color: EcoColors.white,
-    opacity: 0.9,
-  },
-  signInLink: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: EcoColors.white,
-  },
-});

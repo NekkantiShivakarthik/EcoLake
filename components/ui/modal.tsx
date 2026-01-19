@@ -9,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { EcoColors } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -36,6 +37,8 @@ export function Modal({
   showCloseButton = true,
   size = 'md',
 }: ModalProps) {
+  const { colors } = useTheme();
+  
   if (!visible) return null;
 
   return (
@@ -50,14 +53,14 @@ export function Modal({
       <Animated.View
         entering={SlideInUp.springify().damping(15)}
         exiting={SlideOutDown.duration(200)}
-        style={[styles.content, { maxHeight: SCREEN_HEIGHT * sizeMap[size] }]}
+        style={[styles.content, { maxHeight: SCREEN_HEIGHT * sizeMap[size], backgroundColor: colors.cardBackground }]}
       >
         {(title || showCloseButton) && (
-          <View style={styles.header}>
-            <Text style={styles.title}>{title}</Text>
+          <View style={[styles.header, { borderBottomColor: colors.border }]}>
+            <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
             {showCloseButton && (
               <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                <Ionicons name="close" size={24} color={EcoColors.gray600} />
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             )}
           </View>
@@ -91,6 +94,8 @@ export function ConfirmModal({
   variant = 'default',
   loading = false,
 }: ConfirmModalProps) {
+  const { colors } = useTheme();
+  
   if (!visible) return null;
 
   return (
@@ -105,17 +110,18 @@ export function ConfirmModal({
       <Animated.View
         entering={SlideInUp.springify().damping(15)}
         exiting={SlideOutDown.duration(200)}
-        style={styles.confirmContent}
+        style={[styles.confirmContent, { backgroundColor: colors.cardBackground }]}
       >
-        <Text style={styles.confirmTitle}>{title}</Text>
-        <Text style={styles.confirmMessage}>{message}</Text>
+        <Text style={[styles.confirmTitle, { color: colors.text }]}>{title}</Text>
+        <Text style={[styles.confirmMessage, { color: colors.textSecondary }]}>{message}</Text>
         <View style={styles.confirmButtons}>
-          <TouchableOpacity style={styles.cancelButton} onPress={onClose} disabled={loading}>
-            <Text style={styles.cancelText}>{cancelText}</Text>
+          <TouchableOpacity style={[styles.cancelButton, { backgroundColor: colors.surface }]} onPress={onClose} disabled={loading}>
+            <Text style={[styles.cancelText, { color: colors.text }]}>{cancelText}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[
               styles.confirmButton,
+              { backgroundColor: colors.primary },
               variant === 'danger' && styles.confirmButtonDanger,
             ]}
             onPress={onConfirm}

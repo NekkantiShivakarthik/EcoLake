@@ -35,7 +35,7 @@ const filters: { key: FilterType; label: string; icon: string; emoji: string }[]
 export default function ExploreScreen() {
   const { user: authUser } = useAuth();
   const { reports, loading, error, refetch } = useReports();
-  const { actualTheme, setTheme } = useTheme();
+  const { actualTheme, setTheme, colors } = useTheme();
   const { updateReport } = useUpdateReport();
   const { deleteReport } = useDeleteReport();
   
@@ -89,7 +89,7 @@ export default function ExploreScreen() {
   });
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       {/* Gradient Header */}
       <LinearGradient
         colors={['#0E7490', '#0891B2', '#06B6D4']}

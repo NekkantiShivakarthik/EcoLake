@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Logo } from '@/components/ui/logo';
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/contexts/theme-context';
 import { Link, router } from 'expo-router';
@@ -83,14 +84,8 @@ export default function LoginScreen() {
     themeIcon: {
       fontSize: 24,
     },
-    logoEmoji: {
-      fontSize: 72,
+    logoContainer: {
       marginBottom: 12,
-    },
-    logoText: {
-      fontSize: 36,
-      fontWeight: 'bold',
-      color: colors.white,
     },
     tagline: {
       fontSize: 16,
@@ -163,25 +158,6 @@ export default function LoginScreen() {
       color: colors.white,
       textDecorationLine: 'underline',
     },
-    featuresContainer: {
-      flexDirection: 'row',
-      justifyContent: 'space-around',
-      marginTop: 32,
-      paddingHorizontal: 20,
-    },
-    featureItem: {
-      alignItems: 'center',
-      gap: 8,
-    },
-    featureIcon: {
-      fontSize: 32,
-    },
-    featureText: {
-      fontSize: 13,
-      color: colors.white,
-      opacity: 0.9,
-      textAlign: 'center',
-    },
   }), [colors]);
 
   return (
@@ -205,8 +181,9 @@ export default function LoginScreen() {
                 {theme === 'system' ? '🌓' : actualTheme === 'dark' ? '🌙' : '☀️'}
               </Text>
             </TouchableOpacity>
-            <Text style={styles.logoEmoji}>🌊</Text>
-            <Text style={styles.logoText}>EcoLake</Text>
+            <View style={styles.logoContainer}>
+              <Logo size="large" showText={true} textColor={colors.white} />
+            </View>
             <Text style={styles.tagline}>Protect Our Waters Together</Text>
           </View>
 
@@ -264,22 +241,6 @@ export default function LoginScreen() {
                 <Text style={styles.signUpLink}>Sign Up</Text>
               </TouchableOpacity>
             </Link>
-          </View>
-
-          {/* Features Section */}
-          <View style={styles.featuresContainer}>
-            <View style={styles.featureItem}>
-              <Text style={styles.featureIcon}>📍</Text>
-              <Text style={styles.featureText}>Find nearby lakes</Text>
-            </View>
-            <View style={styles.featureItem}>
-              <Text style={styles.featureIcon}>📸</Text>
-              <Text style={styles.featureText}>Report pollution</Text>
-            </View>
-            <View style={styles.featureItem}>
-              <Text style={styles.featureIcon}>🏆</Text>
-              <Text style={styles.featureText}>Earn rewards</Text>
-            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

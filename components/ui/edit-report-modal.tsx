@@ -18,6 +18,7 @@ import {
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { EcoColors, getSeverityColor } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 import { Report } from '@/types/database';
 import { Card } from './card';
 
@@ -51,6 +52,7 @@ export function EditReportModal({
   onSave,
   loading = false,
 }: EditReportModalProps) {
+  const { colors } = useTheme();
   const [category, setCategory] = useState<Category>('other');
   const [severity, setSeverity] = useState(3);
   const [description, setDescription] = useState('');
@@ -97,7 +99,7 @@ export function EditReportModal({
       onRequestClose={onClose}
     >
       <KeyboardAvoidingView
-        style={styles.container}
+        style={[styles.container, { backgroundColor: colors.background }]}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         {/* Header */}
@@ -123,7 +125,7 @@ export function EditReportModal({
           {hasPhotos && (
             <Animated.View entering={FadeInDown.delay(100).springify()}>
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>📸 Photos</Text>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>📸 Photos</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <View style={styles.photosRow}>
                     {report?.photos?.map((photo, index) => (
@@ -137,7 +139,7 @@ export function EditReportModal({
                     ))}
                   </View>
                 </ScrollView>
-                <Text style={styles.photoHint}>Photos cannot be edited</Text>
+                                <Text style={[styles.photoHint, { color: colors.textTertiary }]}>Photos cannot be edited</Text>
               </View>
             </Animated.View>
           )}
@@ -145,30 +147,30 @@ export function EditReportModal({
           {/* Location (Read-only) */}
           <Animated.View entering={FadeInDown.delay(150).springify()}>
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>📍 Location</Text>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>📍 Location</Text>
               <Card variant="outlined" style={styles.locationCard}>
                 <View style={styles.locationContent}>
                   <Text style={styles.locationIcon}>🏞️</Text>
                   <View style={styles.locationInfo}>
-                    <Text style={styles.locationName}>
+                    <Text style={[styles.locationName, { color: colors.text }]}>
                       {report?.lake_name || 'Unknown Lake'}
                     </Text>
                     {report?.lat && report?.lng && (
-                      <Text style={styles.locationCoords}>
+                      <Text style={[styles.locationCoords, { color: colors.textSecondary }]}>
                         {report.lat.toFixed(4)}, {report.lng.toFixed(4)}
                       </Text>
                     )}
                   </View>
                 </View>
               </Card>
-              <Text style={styles.photoHint}>Location cannot be changed</Text>
+              <Text style={[styles.photoHint, { color: colors.textTertiary }]}>Location cannot be changed</Text>
             </View>
           </Animated.View>
 
           {/* Category Selection */}
           <Animated.View entering={FadeInDown.delay(200).springify()}>
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Pollution Category *</Text>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Pollution Category *</Text>
               <View style={styles.categoriesGrid}>
                 {categories.map((cat) => (
                   <TouchableOpacity

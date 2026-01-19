@@ -49,7 +49,7 @@ interface Volunteer {
 
 export default function ManageScreen() {
   const { user } = useAuth();
-  const { actualTheme, setTheme } = useTheme();
+  const { actualTheme, setTheme, colors } = useTheme();
   const [reports, setReports] = useState<Report[]>([]);
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -160,6 +160,38 @@ export default function ManageScreen() {
     }
   };
 
+  const deleteReport = async (report: Report) => {
+    Alert.alert(
+      'Delete Report',
+      `Are you sure you want to delete this report? This action cannot be undone.`,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const { error } = await supabase
+                .from('reports')
+                .delete()
+                .eq('id', report.id);
+
+              if (error) throw error;
+
+              Alert.alert('Success', 'Report deleted successfully!');
+              fetchData();
+            } catch (error: any) {
+              Alert.alert('Error', error.message || 'Failed to delete report');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const filterButtons = [
     { key: 'all', label: 'All', count: reports.length },
     { key: 'submitted', label: 'Submitted', count: reports.filter(r => r.status === 'submitted').length },
@@ -178,18 +210,18 @@ export default function ManageScreen() {
   // Check if user is admin
   if (user?.role !== 'ngo_admin') {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.centerContainer}>
           <Text style={styles.noAccessText}>⚠️</Text>
-          <Text style={styles.noAccessTitle}>Access Denied</Text>
-          <Text style={styles.noAccessMessage}>Only NGO Admins can access this section</Text>
+          <Text style={[styles.noAccessTitle, { color: colors.text }]}>Access Denied</Text>
+          <Text style={[styles.noAccessMessage, { color: colors.textSecondary }]}>Only NGO Admins can access this section</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       {/* Gradient Header */}
       <LinearGradient
         colors={[EcoColors.primary, EcoColors.primaryDark]}
@@ -374,6 +406,14 @@ export default function ManageScreen() {
                     <Text style={styles.assignButtonText}>Assign</Text>
                   </TouchableOpacity>
                 )}
+
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.deleteButton]}
+                  onPress={() => deleteReport(report)}
+                >
+                  <Ionicons name="trash-outline" size={16} color={EcoColors.white} />
+                  <Text style={styles.deleteButtonText}>Delete</Text>
+                </TouchableOpacity>
               </View>
             </Card>
           ))
@@ -803,6 +843,20 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   assignButtonText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: EcoColors.white,
+  },
+  deleteButton: {
+    flex: 1,
+    backgroundColor: EcoColors.error,
+    shadowColor: EcoColors.error,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  deleteButtonText: {
     fontSize: 14,
     fontWeight: '700',
     color: EcoColors.white,

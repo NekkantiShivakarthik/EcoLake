@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View, ViewStyle } from 'react-native';
 
 import { EcoColors } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 
 interface EmptyStateProps {
   icon?: string;
@@ -12,11 +13,13 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({ icon = '📭', title, description, action, style }: EmptyStateProps) {
+  const { colors } = useTheme();
+  
   return (
     <View style={[styles.container, style]}>
       <Text style={styles.icon}>{icon}</Text>
-      <Text style={styles.title}>{title}</Text>
-      {description && <Text style={styles.description}>{description}</Text>}
+      <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+      {description && <Text style={[styles.description, { color: colors.textSecondary }]}>{description}</Text>}
       {action && <View style={styles.action}>{action}</View>}
     </View>
   );
@@ -36,11 +39,13 @@ export function ErrorState({
   action,
   style,
 }: ErrorStateProps) {
+  const { colors } = useTheme();
+  
   return (
     <View style={[styles.container, style]}>
       <Text style={styles.icon}>😕</Text>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.description}>{description}</Text>
+      <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+      <Text style={[styles.description, { color: colors.textSecondary }]}>{description}</Text>
       {action && <View style={styles.action}>{action}</View>}
     </View>
   );
@@ -52,10 +57,12 @@ interface LoadingStateProps {
 }
 
 export function LoadingState({ message = 'Loading...', style }: LoadingStateProps) {
+  const { colors } = useTheme();
+  
   return (
     <View style={[styles.container, style]}>
       <Text style={styles.loadingIcon}>⏳</Text>
-      <Text style={styles.loadingText}>{message}</Text>
+      <Text style={[styles.loadingText, { color: colors.textSecondary }]}>{message}</Text>
     </View>
   );
 }
@@ -73,13 +80,15 @@ export function SuccessState({
   action,
   style,
 }: SuccessStateProps) {
+  const { colors } = useTheme();
+  
   return (
     <View style={[styles.container, style]}>
       <View style={styles.successIconContainer}>
         <Text style={styles.successIcon}>✓</Text>
       </View>
-      <Text style={styles.title}>{title}</Text>
-      {description && <Text style={styles.description}>{description}</Text>}
+      <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
+      {description && <Text style={[styles.description, { color: colors.textSecondary }]}>{description}</Text>}
       {action && <View style={styles.action}>{action}</View>}
     </View>
   );
@@ -98,13 +107,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: EcoColors.gray800,
     textAlign: 'center',
     marginBottom: 8,
   },
   description: {
     fontSize: 14,
-    color: EcoColors.gray500,
     textAlign: 'center',
     lineHeight: 20,
     maxWidth: 280,
@@ -118,7 +125,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: EcoColors.gray500,
   },
   successIconContainer: {
     width: 80,

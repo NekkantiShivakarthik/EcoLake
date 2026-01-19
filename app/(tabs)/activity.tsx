@@ -17,9 +17,11 @@ import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { EcoColors } from '@/constants/colors';
 import { useAuth } from '@/contexts/auth-context';
+import { useTheme } from '@/contexts/theme-context';
 import { useReports, useUserProfile } from '@/hooks/use-supabase';
 
 export default function ActivityHistoryScreen() {
+  const { colors } = useTheme();
   const { user: authUser } = useAuth();
   const { user } = useUserProfile(authUser?.id);
   const { reports, refetch } = useReports();
@@ -136,7 +138,7 @@ export default function ActivityHistoryScreen() {
   });
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       {/* Gradient Header */}
       <LinearGradient
         colors={[EcoColors.primary, EcoColors.primaryDark]}

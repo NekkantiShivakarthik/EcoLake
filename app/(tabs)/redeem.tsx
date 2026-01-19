@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { RewardCard } from '@/components/ui/reward-card';
 import { EcoColors } from '@/constants/colors';
 import { useAuth } from '@/contexts/auth-context';
+import { useTheme } from '@/contexts/theme-context';
 import { useRedeemReward, useRedemptions, useRewards, useUserProfile } from '@/hooks/use-supabase';
 
 type CategoryType = 'all' | 'gift_card' | 'subscription' | 'eco_action' | 'cash';
@@ -28,6 +29,7 @@ const categories: { key: CategoryType; label: string; icon: string }[] = [
 ];
 
 export default function RedeemScreen() {
+  const { colors } = useTheme();
   const { user } = useAuth();
   const { points, refetch: refetchProfile } = useUserProfile(user?.id);
   const [activeCategory, setActiveCategory] = useState<CategoryType>('all');
@@ -141,31 +143,31 @@ export default function RedeemScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Redeem Points</Text>
-        <View style={styles.pointsBadge}>
+        <Text style={[styles.title, { color: colors.text }]}>Redeem Points</Text>
+        <View style={[styles.pointsBadge, { backgroundColor: colors.primary + '20' }]}>
           <Text style={styles.pointsIcon}>⭐</Text>
-          <Text style={styles.pointsText}>{points} pts</Text>
+          <Text style={[styles.pointsText, { color: colors.primary }]}>{points} pts</Text>
         </View>
       </View>
 
       {/* Tabs */}
       <View style={styles.tabs}>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'available' && styles.tabActive]}
+          style={[styles.tab, activeTab === 'available' && [styles.tabActive, { borderBottomColor: colors.primary }]]}
           onPress={() => setActiveTab('available')}
         >
-          <Text style={[styles.tabText, activeTab === 'available' && styles.tabTextActive]}>
+          <Text style={[styles.tabText, { color: colors.textSecondary }, activeTab === 'available' && { color: colors.primary }]}>
             Available Rewards
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tab, activeTab === 'history' && styles.tabActive]}
+          style={[styles.tab, activeTab === 'history' && [styles.tabActive, { borderBottomColor: colors.primary }]]}
           onPress={() => setActiveTab('history')}
         >
-          <Text style={[styles.tabText, activeTab === 'history' && styles.tabTextActive]}>
+          <Text style={[styles.tabText, { color: colors.textSecondary }, activeTab === 'history' && { color: colors.primary }]}>
             My Redemptions
           </Text>
         </TouchableOpacity>

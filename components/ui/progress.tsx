@@ -1,12 +1,13 @@
 import React from 'react';
 import { StyleSheet, Text, View, ViewStyle } from 'react-native';
 import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
+    useAnimatedStyle,
+    useSharedValue,
+    withTiming,
 } from 'react-native-reanimated';
 
 import { EcoColors } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 
 interface ProgressBarProps {
   progress: number; // 0-100
@@ -21,12 +22,14 @@ interface ProgressBarProps {
 export function ProgressBar({
   progress,
   color = EcoColors.primary,
-  backgroundColor = EcoColors.gray200,
+  backgroundColor,
   height = 8,
   showLabel = false,
   animated = true,
   style,
 }: ProgressBarProps) {
+  const { colors } = useTheme();
+  const bgColor = backgroundColor || colors.border;
   const animatedProgress = useSharedValue(0);
 
   React.useEffect(() => {
@@ -43,10 +46,10 @@ export function ProgressBar({
     <View style={style}>
       {showLabel && (
         <View style={styles.labelContainer}>
-          <Text style={styles.labelText}>{Math.round(progress)}%</Text>
+          <Text style={[styles.labelText, { color: colors.textSecondary }]}>{Math.round(progress)}%</Text>
         </View>
       )}
-      <View style={[styles.container, { height, backgroundColor }]}>
+      <View style={[styles.container, { height, backgroundColor: bgColor }]}>
         <Animated.View
           style={[
             styles.progress,
@@ -73,9 +76,11 @@ export function CircularProgress({
   size = 80,
   strokeWidth = 8,
   color = EcoColors.primary,
-  backgroundColor = EcoColors.gray200,
+  backgroundColor,
   children,
 }: CircularProgressProps) {
+  const { colors } = useTheme();
+  const bgColor = backgroundColor || colors.border;
   // radius/circumference not needed for the current view-based circular progress implementation
 
   return (
@@ -90,7 +95,7 @@ export function CircularProgress({
               height: size - strokeWidth,
               borderRadius: (size - strokeWidth) / 2,
               borderWidth: strokeWidth,
-              borderColor: backgroundColor,
+              borderColor: bgColor,
             },
           ]}
         />
@@ -127,6 +132,7 @@ export function StepsProgress({
   currentStep,
   color = EcoColors.primary,
 }: StepsProgressProps) {
+  const { colors } = useTheme();
   return (
     <View style={styles.stepsContainer}>
       {steps.map((step, index) => (
@@ -135,6 +141,7 @@ export function StepsProgress({
             <View
               style={[
                 styles.stepCircle,
+                { borderColor: colors.border, backgroundColor: colors.cardBackground },
                 index <= currentStep && { backgroundColor: color, borderColor: color },
               ]}
             >
@@ -142,21 +149,21 @@ export function StepsProgress({
                 <Text style={styles.stepCheckmark}>✓</Text>
               ) : (
                 <Text
-                  style={[styles.stepNumber, index <= currentStep && styles.stepNumberActive]}
+                  style={[styles.stepNumber, { color: colors.textTertiary }, index <= currentStep && styles.stepNumberActive]}
                 >
                   {index + 1}
                 </Text>
               )}
             </View>
             <Text
-              style={[styles.stepLabel, index <= currentStep && { color, fontWeight: '600' }]}
+              style={[styles.stepLabel, { color: colors.textSecondary }, index <= currentStep && { color, fontWeight: '600' }]}
             >
               {step}
             </Text>
           </View>
           {index < steps.length - 1 && (
             <View
-              style={[styles.stepLine, index < currentStep && { backgroundColor: color }]}
+              style={[styles.stepLine, { backgroundColor: colors.border }, index < currentStep && { backgroundColor: color }]}
             />
           )}
         </React.Fragment>

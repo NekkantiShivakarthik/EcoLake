@@ -19,6 +19,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { CategoryIcons, EcoColors, getSeverityColor } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 import { Lake, Report, User } from '@/types/database';
 import { Card } from './card';
 import { StatusChip } from './chip';
@@ -44,6 +45,7 @@ export function EnhancedReportCard({
   variant = 'default',
   index = 0,
 }: EnhancedReportCardProps) {
+  const { colors } = useTheme();
   const severityColor = getSeverityColor(report.severity || 1);
   const categoryIcon = CategoryIcons[report.category || 'other'];
   const hasPhotos = report.photos && report.photos.length > 0;

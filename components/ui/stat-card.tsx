@@ -1,4 +1,5 @@
 import { EcoColors } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -24,6 +25,8 @@ export function StatCard({
   trend,
   variant = 'default',
 }: StatCardProps) {
+  const { colors } = useTheme();
+
   if (variant === 'gradient') {
     return (
       <Animated.View entering={FadeInUp.delay(100).springify()} style={styles.gradientWrapper}>
@@ -72,8 +75,8 @@ export function StatCard({
       <Animated.Text entering={FadeIn.delay(200)} style={[styles.value, { color }]}>
         {typeof value === 'number' ? value.toLocaleString() : value}
       </Animated.Text>
-      <Text style={styles.title}>{title}</Text>
-      {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+      <Text style={[styles.title, { color: colors.textSecondary }]}>{title}</Text>
+      {subtitle && <Text style={[styles.subtitle, { color: colors.textTertiary }]}>{subtitle}</Text>}
     </Card>
   );
 }
@@ -130,12 +133,10 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 13,
-    color: EcoColors.gray500,
     fontWeight: '600',
   },
   subtitle: {
     fontSize: 11,
-    color: EcoColors.gray400,
     marginTop: 2,
   },
   // Gradient variant styles

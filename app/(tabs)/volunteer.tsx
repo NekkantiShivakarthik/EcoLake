@@ -41,6 +41,7 @@ interface Report {
 }
 
 export default function VolunteerWorkScreen() {
+  const { colors } = useTheme();
   const { user } = useAuth();
   const { points } = useUserProfile(user?.id);
   const { showBadgeNotification } = useBadgeNotification();
@@ -255,15 +256,15 @@ export default function VolunteerWorkScreen() {
 
   if (loading) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color={EcoColors.primary} />
+      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   if (selectedReport) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
         <ScrollView style={styles.scrollView}>
           <View style={styles.header}>
             <TouchableOpacity
@@ -444,15 +445,15 @@ export default function VolunteerWorkScreen() {
   const myReports = reports.filter(r => r.assigned_cleaner_id === user?.id);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Volunteer Work</Text>
-        <Text style={styles.headerSubtitle}>Claim reports and earn points! 🌟</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Volunteer Work</Text>
+        <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>Claim reports and earn points! 🌟</Text>
       </View>
 
       <ScrollView
         style={styles.scrollView}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
       >
         {/* Points Display */}
         <Card style={[styles.card, styles.pointsCard]}>

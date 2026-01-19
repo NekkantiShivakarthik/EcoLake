@@ -3,6 +3,7 @@ import React from 'react';
 import { StyleSheet, Text, TextInput, TextInputProps, TouchableOpacity, View } from 'react-native';
 
 import { EcoColors } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -23,31 +24,32 @@ export function Input({
   style,
   ...props
 }: InputProps) {
+  const { colors } = useTheme();
   const [isFocused, setIsFocused] = React.useState(false);
 
   const containerStyle = [
     styles.container,
-    variant === 'filled' && styles.containerFilled,
-    variant === 'outlined' && styles.containerOutlined,
-    isFocused && styles.containerFocused,
+    variant === 'filled' && [styles.containerFilled, { backgroundColor: colors.inputBackground }],
+    variant === 'outlined' && [styles.containerOutlined, { backgroundColor: colors.cardBackground, borderColor: colors.border }],
+    isFocused && [styles.containerFocused, { borderColor: colors.primary }],
     error && styles.containerError,
   ];
 
   return (
     <View style={styles.wrapper}>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {label && <Text style={[styles.label, { color: colors.text }]}>{label}</Text>}
       <View style={containerStyle}>
         {leftIcon && (
           <Ionicons
             name={leftIcon}
             size={20}
-            color={isFocused ? EcoColors.primary : EcoColors.gray400}
+            color={isFocused ? colors.primary : colors.textTertiary}
             style={styles.leftIcon}
           />
         )}
         <TextInput
-          style={[styles.input, style]}
-          placeholderTextColor={EcoColors.gray400}
+          style={[styles.input, { color: colors.text }, style]}
+          placeholderTextColor={colors.textTertiary}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           {...props}
@@ -57,7 +59,7 @@ export function Input({
             <Ionicons
               name={rightIcon}
               size={20}
-              color={EcoColors.gray400}
+              color={colors.textTertiary}
             />
           </TouchableOpacity>
         )}

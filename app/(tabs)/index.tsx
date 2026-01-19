@@ -3,13 +3,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  Alert,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    Alert,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -76,30 +76,30 @@ export default function HomeScreen() {
   const currentLevel = Math.floor((user?.points || points) / 500) + 1;
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={EcoColors.primary} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
         }
       >
         {/* Header */}
         <Animated.View entering={FadeInDown.delay(50).springify()}>
           <View style={styles.header}>
             <View style={styles.headerLeft}>
-              <Text style={styles.greeting}>Welcome back,</Text>
-              <Text style={styles.userName}>{user?.name || 'Eco Hero'} 👋</Text>
+              <Text style={[styles.greeting, { color: colors.textSecondary }]}>Welcome back,</Text>
+              <Text style={[styles.userName, { color: colors.text }]}>{user?.name || 'Eco Hero'} 👋</Text>
             </View>
             <View style={styles.headerRight}>
               <TouchableOpacity
-                style={styles.themeToggle}
+                style={[styles.themeToggle, { backgroundColor: colors.surface }]}
                 onPress={() => setTheme(actualTheme === 'dark' ? 'light' : 'dark')}
               >
                 <Ionicons
                   name={actualTheme === 'dark' ? 'sunny' : 'moon'}
                   size={22}
-                  color={EcoColors.gray700}
+                  color={colors.text}
                 />
               </TouchableOpacity>
               <Link href="/(tabs)/redeem" asChild>
@@ -174,7 +174,7 @@ export default function HomeScreen() {
               <LinearGradient colors={[EcoColors.info + '20', EcoColors.info + '10']} style={styles.quickActionIcon}>
                 <Text style={styles.quickActionEmoji}>🔍</Text>
               </LinearGradient>
-              <Text style={styles.quickActionText}>Explore</Text>
+              <Text style={[styles.quickActionText, { color: colors.textSecondary }]}>Explore</Text>
             </TouchableOpacity>
           </Link>
           <Link href="/(tabs)/leaderboard" asChild>
@@ -182,7 +182,7 @@ export default function HomeScreen() {
               <LinearGradient colors={[EcoColors.accent + '20', EcoColors.accent + '10']} style={styles.quickActionIcon}>
                 <Text style={styles.quickActionEmoji}>🏆</Text>
               </LinearGradient>
-              <Text style={styles.quickActionText}>Leaders</Text>
+              <Text style={[styles.quickActionText, { color: colors.textSecondary }]}>Leaders</Text>
             </TouchableOpacity>
           </Link>
           <Link href="/(tabs)/redeem" asChild>
@@ -190,7 +190,7 @@ export default function HomeScreen() {
               <LinearGradient colors={[EcoColors.secondary + '20', EcoColors.secondary + '10']} style={styles.quickActionIcon}>
                 <Text style={styles.quickActionEmoji}>🎁</Text>
               </LinearGradient>
-              <Text style={styles.quickActionText}>Rewards</Text>
+              <Text style={[styles.quickActionText, { color: colors.textSecondary }]}>Rewards</Text>
             </TouchableOpacity>
           </Link>
           <Link href="/(tabs)/activity" asChild>
@@ -198,14 +198,14 @@ export default function HomeScreen() {
               <LinearGradient colors={[EcoColors.primary + '20', EcoColors.primary + '10']} style={styles.quickActionIcon}>
                 <Text style={styles.quickActionEmoji}>📊</Text>
               </LinearGradient>
-              <Text style={styles.quickActionText}>Activity</Text>
+              <Text style={[styles.quickActionText, { color: colors.textSecondary }]}>Activity</Text>
             </TouchableOpacity>
           </Link>
         </Animated.View>
 
         {/* Stats Section */}
         <Animated.View entering={FadeInDown.delay(200).springify()} style={styles.section}>
-          <Text style={styles.sectionTitle}>📊 Impact Dashboard</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>📊 Impact Dashboard</Text>
           <View style={styles.statsRow}>
             <StatCard
               title="Total Reports"
@@ -239,11 +239,11 @@ export default function HomeScreen() {
         {/* Recent Reports Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>🔥 Recent Reports</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>🔥 Recent Reports</Text>
             <Link href="/(tabs)/explore" asChild>
               <TouchableOpacity style={styles.seeAllBtn}>
-                <Text style={styles.seeAllText}>View All</Text>
-                <Ionicons name="arrow-forward" size={16} color={EcoColors.primary} />
+                <Text style={[styles.seeAllText, { color: colors.primary }]}>View All</Text>
+                <Ionicons name="arrow-forward" size={16} color={colors.primary} />
               </TouchableOpacity>
             </Link>
           </View>

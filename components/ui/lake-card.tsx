@@ -5,6 +5,7 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import { EcoColors } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 import { Lake } from '@/types/database';
 import { Card } from './card';
 
@@ -15,6 +16,7 @@ interface LakeCardProps {
 }
 
 export function LakeCard({ lake, reportsCount = 0, onPress }: LakeCardProps) {
+  const { colors } = useTheme();
   const Wrapper = onPress ? TouchableOpacity : View;
   
   return (
@@ -23,7 +25,7 @@ export function LakeCard({ lake, reportsCount = 0, onPress }: LakeCardProps) {
         <View style={styles.imageContainer}>
           <Image
             source={lake.photo_url || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4'}
-            style={styles.image}
+            style={[styles.image, { backgroundColor: colors.border }]}
             contentFit="cover"
           />
           <LinearGradient
@@ -38,16 +40,16 @@ export function LakeCard({ lake, reportsCount = 0, onPress }: LakeCardProps) {
           )}
         </View>
         <View style={styles.content}>
-          <Text style={styles.name} numberOfLines={1}>{lake.name}</Text>
+          <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>{lake.name}</Text>
           {lake.region && (
             <View style={styles.locationRow}>
               <Ionicons name="location" size={12} color={EcoColors.primary} />
-              <Text style={styles.region} numberOfLines={1}>{lake.region}</Text>
+              <Text style={[styles.region, { color: colors.textSecondary }]} numberOfLines={1}>{lake.region}</Text>
             </View>
           )}
           <View style={styles.statusRow}>
             <View style={[styles.statusDot, { backgroundColor: EcoColors.success }]} />
-            <Text style={styles.statusText}>Active monitoring</Text>
+            <Text style={[styles.statusText, { color: colors.textTertiary }]}>Active monitoring</Text>
           </View>
         </View>
       </Card>

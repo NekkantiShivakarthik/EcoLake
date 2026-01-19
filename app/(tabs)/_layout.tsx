@@ -4,8 +4,8 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { HapticTab } from '@/components/haptic-tab';
-import { EcoColors } from '@/constants/colors';
 import { useAuth } from '@/contexts/auth-context';
+import { useTheme } from '@/contexts/theme-context';
 
 function TabIcon({ icon, label, focused }: { icon: string; label: string; focused: boolean }) {
   return (
@@ -18,12 +18,13 @@ function TabIcon({ icon, label, focused }: { icon: string; label: string; focuse
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const { user, loading } = useAuth();
+  const { colors } = useTheme();
 
   // Show loading state while checking auth
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: EcoColors.gray50 }}>
-        <ActivityIndicator size="large" color={EcoColors.primary} />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -36,14 +37,14 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: EcoColors.primary,
-        tabBarInactiveTintColor: EcoColors.gray400,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textTertiary,
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarStyle: {
-          backgroundColor: EcoColors.white,
+          backgroundColor: colors.cardBackground,
           borderTopWidth: 1,
-          borderTopColor: EcoColors.gray200,
+          borderTopColor: colors.border,
           paddingTop: 12,
           paddingBottom: Math.max(insets.bottom, 16),
           paddingHorizontal: 8,

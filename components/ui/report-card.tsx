@@ -1,4 +1,5 @@
 import { CategoryIcons, EcoColors, getSeverityColor } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 import { Lake, Report, User } from '@/types/database';
 import { Image } from 'expo-image';
 import React from 'react';
@@ -12,6 +13,7 @@ interface ReportCardProps {
 }
 
 export function ReportCard({ report, onPress }: ReportCardProps) {
+  const { colors } = useTheme();
   const severityColor = getSeverityColor(report.severity || 1);
   const categoryIcon = CategoryIcons[report.category || 'other'];
   const hasPhotos = report.photos && report.photos.length > 0;
@@ -33,7 +35,7 @@ export function ReportCard({ report, onPress }: ReportCardProps) {
       <Card variant="elevated" style={styles.card}>
         {/* Photo Preview */}
         {hasPhotos && (
-          <View style={styles.photoContainer}>
+          <View style={[styles.photoContainer, { backgroundColor: colors.border }]}>
             <Image
               source={{ uri: report.photos![0] }}
               style={styles.photo}
@@ -49,28 +51,28 @@ export function ReportCard({ report, onPress }: ReportCardProps) {
 
         <View style={styles.content}>
           <View style={styles.header}>
-            <View style={styles.categoryBadge}>
+            <View style={[styles.categoryBadge, { backgroundColor: colors.surface }]}>
               <Text style={styles.categoryIcon}>{categoryIcon}</Text>
-              <Text style={styles.categoryText}>{report.category || 'Other'}</Text>
+              <Text style={[styles.categoryText, { color: colors.textSecondary }]}>{report.category || 'Other'}</Text>
             </View>
             <StatusChip status={report.status || 'submitted'} size="sm" />
           </View>
 
-          <Text style={styles.description} numberOfLines={2}>
+          <Text style={[styles.description, { color: colors.text }]} numberOfLines={2}>
             {report.description || 'No description provided'}
           </Text>
 
           {(report.lake || report.lake_name) && (
-            <View style={styles.locationRow}>
+            <View style={[styles.locationRow, { backgroundColor: colors.surface }]}>
               <Text style={styles.locationIcon}>📍</Text>
-              <Text style={styles.locationText}>{report.lake?.name || report.lake_name}</Text>
+              <Text style={[styles.locationText, { color: colors.textSecondary }]}>{report.lake?.name || report.lake_name}</Text>
             </View>
           )}
 
           <View style={styles.footer}>
             <View style={styles.severityContainer}>
-              <Text style={styles.severityLabel}>Severity</Text>
-              <View style={styles.severityBar}>
+              <Text style={[styles.severityLabel, { color: colors.textTertiary }]}>Severity</Text>
+              <View style={[styles.severityBar, { backgroundColor: colors.border }]}>
                 <View
                   style={[
                     styles.severityFill,
@@ -82,7 +84,7 @@ export function ReportCard({ report, onPress }: ReportCardProps) {
                 />
               </View>
             </View>
-            <Text style={styles.dateText}>{formatDate(report.created_at)}</Text>
+            <Text style={[styles.dateText, { color: colors.textTertiary }]}>{formatDate(report.created_at)}</Text>
           </View>
         </View>
       </Card>

@@ -8,6 +8,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { EcoColors } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 
 interface SkeletonProps {
   width?: number | string;
@@ -17,6 +18,7 @@ interface SkeletonProps {
 }
 
 export function Skeleton({ width = '100%', height = 20, borderRadius = 8, style }: SkeletonProps) {
+  const { colors } = useTheme();
   const opacity = useSharedValue(0.3);
 
   React.useEffect(() => {
@@ -31,7 +33,7 @@ export function Skeleton({ width = '100%', height = 20, borderRadius = 8, style 
     <Animated.View
       style={[
         styles.skeleton,
-        { width, height, borderRadius },
+        { width, height, borderRadius, backgroundColor: colors.border },
         animatedStyle,
         style,
       ]}
@@ -44,9 +46,11 @@ interface CardSkeletonProps {
 }
 
 export function CardSkeleton({ variant = 'report' }: CardSkeletonProps) {
+  const { colors } = useTheme();
+  
   if (variant === 'stat') {
     return (
-      <View style={styles.statCard}>
+      <View style={[styles.statCard, { backgroundColor: colors.cardBackground }]}>
         <Skeleton width={40} height={40} borderRadius={20} />
         <Skeleton width="60%" height={14} style={{ marginTop: 12 }} />
         <Skeleton width="40%" height={24} style={{ marginTop: 8 }} />
@@ -56,7 +60,7 @@ export function CardSkeleton({ variant = 'report' }: CardSkeletonProps) {
 
   if (variant === 'lake') {
     return (
-      <View style={styles.lakeCard}>
+      <View style={[styles.lakeCard, { backgroundColor: colors.cardBackground }]}>
         <Skeleton width="100%" height={120} borderRadius={12} />
         <Skeleton width="70%" height={16} style={{ marginTop: 12 }} />
         <Skeleton width="50%" height={12} style={{ marginTop: 8 }} />
@@ -66,7 +70,7 @@ export function CardSkeleton({ variant = 'report' }: CardSkeletonProps) {
 
   if (variant === 'reward') {
     return (
-      <View style={styles.rewardCard}>
+      <View style={[styles.rewardCard, { backgroundColor: colors.cardBackground }]}>
         <Skeleton width="100%" height={180} borderRadius={16} />
         <View style={{ padding: 16 }}>
           <Skeleton width="80%" height={18} />
@@ -79,7 +83,7 @@ export function CardSkeleton({ variant = 'report' }: CardSkeletonProps) {
 
   // Default report card
   return (
-    <View style={styles.reportCard}>
+    <View style={[styles.reportCard, { backgroundColor: colors.cardBackground }]}>
       <View style={styles.reportHeader}>
         <Skeleton width={48} height={48} borderRadius={24} />
         <View style={{ flex: 1, marginLeft: 12 }}>

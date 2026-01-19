@@ -28,7 +28,7 @@ type ThemeOption = 'light' | 'dark' | 'system';
 
 export default function SettingsScreen() {
   const { user: authUser, refreshUser, signOut } = useAuth();
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, colors } = useTheme();
   const [name, setName] = useState(authUser?.name || '');
   const [email, setEmail] = useState(authUser?.email || '');
   const [loading, setLoading] = useState(false);
@@ -176,7 +176,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -187,9 +187,9 @@ export default function SettingsScreen() {
             style={styles.backButton}
             onPress={() => router.back()}
           >
-            <Ionicons name="arrow-back" size={24} color={EcoColors.gray800} />
+            <Ionicons name="arrow-back" size={24} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.title}>Settings</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Settings</Text>
           <View style={styles.placeholder} />
         </View>
 

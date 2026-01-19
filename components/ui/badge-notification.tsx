@@ -2,25 +2,26 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import React, { useEffect, useState } from 'react';
 import {
-  Dimensions,
-  Modal,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Dimensions,
+    Modal,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import Animated, {
-  FadeIn,
-  FadeOut,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withSequence,
-  withSpring,
-  withTiming,
+    FadeIn,
+    FadeOut,
+    useAnimatedStyle,
+    useSharedValue,
+    withRepeat,
+    withSequence,
+    withSpring,
+    withTiming,
 } from 'react-native-reanimated';
 
 import { EcoColors } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 import { Badge } from '@/types/database';
 
 interface BadgeNotificationProps {
@@ -32,6 +33,7 @@ interface BadgeNotificationProps {
 const { width } = Dimensions.get('window');
 
 export function BadgeNotification({ badge, visible, onClose }: BadgeNotificationProps) {
+  const { colors } = useTheme();
   const scale = useSharedValue(0);
   const rotation = useSharedValue(0);
   const sparkle = useSharedValue(0);
@@ -83,7 +85,7 @@ export function BadgeNotification({ badge, visible, onClose }: BadgeNotification
         <Animated.View
           entering={FadeIn.duration(300)}
           exiting={FadeOut.duration(200)}
-          style={styles.container}
+          style={[styles.container, { backgroundColor: colors.cardBackground }]}
         >
           {/* Sparkles Background */}
           <Animated.View style={[styles.sparklesContainer, sparkleAnimatedStyle]}>
@@ -113,7 +115,7 @@ export function BadgeNotification({ badge, visible, onClose }: BadgeNotification
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.congratsText}>🏆 CONGRATULATIONS! 🏆</Text>
-            <Text style={styles.subTitle}>{`You've earned a new badge!`}</Text>
+            <Text style={[styles.subTitle, { color: colors.textSecondary }]}>{`You've earned a new badge!`}</Text>
           </View>
 
           {/* Badge */}
@@ -134,8 +136,8 @@ export function BadgeNotification({ badge, visible, onClose }: BadgeNotification
 
           {/* Badge Info */}
           <View style={styles.badgeInfo}>
-            <Text style={styles.badgeName}>{badge.name}</Text>
-            <Text style={styles.badgeDescription}>{badge.description}</Text>
+            <Text style={[styles.badgeName, { color: colors.text }]}>{badge.name}</Text>
+            <Text style={[styles.badgeDescription, { color: colors.textSecondary }]}>{badge.description}</Text>
           </View>
 
           {/* Stars */}
@@ -152,7 +154,7 @@ export function BadgeNotification({ badge, visible, onClose }: BadgeNotification
 
           {/* X Button */}
           <TouchableOpacity style={styles.xButton} onPress={onClose}>
-            <Ionicons name="close" size={24} color={EcoColors.gray400} />
+            <Ionicons name="close" size={24} color={colors.textTertiary} />
           </TouchableOpacity>
         </Animated.View>
       </View>

@@ -3,6 +3,7 @@ import React from 'react';
 import { StyleSheet, Text, View, ViewStyle } from 'react-native';
 
 import { EcoColors } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 
 interface AvatarProps {
   source?: string;
@@ -41,6 +42,7 @@ export function Avatar({
   badgeColor = EcoColors.success,
   style,
 }: AvatarProps) {
+  const { colors } = useTheme();
   const dimensions = typeof size === 'number' ? size : sizeMap[size];
   const fontSize = typeof size === 'number' ? size * 0.35 : fontSizeMap[size];
   const badgeSize = dimensions * 0.3;
@@ -66,14 +68,14 @@ export function Avatar({
       {avatarSource ? (
         <Image source={{ uri: avatarSource }} style={avatarStyle} contentFit="cover" />
       ) : (
-        <View style={[styles.placeholder, avatarStyle]}>
+        <View style={[styles.placeholder, avatarStyle, { backgroundColor: colors.primary }]}>
           <Text style={[styles.initials, { fontSize }]}>
             {name ? getInitials(name) : '?'}
           </Text>
         </View>
       )}
       {badge && (
-        <View style={[styles.badgeContainer, { right: -2, bottom: -2 }]}>
+        <View style={[styles.badgeContainer, { right: -2, bottom: -2, backgroundColor: colors.cardBackground }]}>
           <Text style={styles.badgeText}>{badge}</Text>
         </View>
       )}
@@ -88,6 +90,7 @@ export function Avatar({
               backgroundColor: badgeColor,
               right: 0,
               bottom: 0,
+              borderColor: colors.cardBackground,
             },
           ]}
         />

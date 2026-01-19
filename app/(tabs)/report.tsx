@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EcoColors } from '@/constants/colors';
 import { useAuth } from '@/contexts/auth-context';
+import { useTheme } from '@/contexts/theme-context';
 import { useImagePicker, useLocation, usePhotoUpload } from '@/hooks/use-media';
 import { useNearbyLakes, useSubmitReport, useUserProfile } from '@/hooks/use-supabase';
 
@@ -36,6 +37,7 @@ const categories: { key: Category; label: string; icon: string }[] = [
 ];
 
 export default function ReportScreen() {
+  const { colors } = useTheme();
   const { user } = useAuth();
   const { points } = useUserProfile(user?.id);
   const { showBadgeNotification } = useBadgeNotification();
@@ -180,7 +182,7 @@ export default function ReportScreen() {
   const isSubmitting = submitting || uploading;
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}

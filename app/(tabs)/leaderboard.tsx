@@ -15,6 +15,7 @@ import { Avatar, CardSkeleton, EmptyState } from '@/components/ui';
 import { Card } from '@/components/ui/card';
 import { LeaderboardItem } from '@/components/ui/leaderboard-item';
 import { EcoColors } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 import { useLeaderboard } from '@/hooks/use-supabase';
 
 type TimeFilter = 'weekly' | 'monthly' | 'all-time';
@@ -26,6 +27,7 @@ const timeFilters: { key: TimeFilter; label: string; icon: string }[] = [
 ];
 
 export default function LeaderboardScreen() {
+  const { colors } = useTheme();
   const [activeFilter, setActiveFilter] = useState<TimeFilter>('all-time');
   const { leaderboard, loading, refetch } = useLeaderboard(activeFilter);
   const [refreshing, setRefreshing] = useState(false);
@@ -40,7 +42,7 @@ export default function LeaderboardScreen() {
   const restOfList = leaderboard.slice(3);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       {/* Gradient Header */}
       <LinearGradient
         colors={['#FFB800', '#FF8C00']}
@@ -196,7 +198,7 @@ export default function LeaderboardScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor={EcoColors.primary}
+              tintColor={colors.primary}
             />
           }
           ListEmptyComponent={() => (
@@ -208,8 +210,8 @@ export default function LeaderboardScreen() {
           )}
           ListHeaderComponent={() => (
             <View style={styles.listHeaderContainer}>
-              <Text style={styles.listHeader}>Other Rankings</Text>
-              <Ionicons name="chevron-down" size={16} color={EcoColors.gray400} />
+              <Text style={[styles.listHeader, { color: colors.text }]}>Other Rankings</Text>
+              <Ionicons name="chevron-down" size={16} color={colors.textTertiary} />
             </View>
           )}
         />
