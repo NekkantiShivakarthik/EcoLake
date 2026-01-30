@@ -1,21 +1,20 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Logo } from '@/components/ui/logo';
 import { EcoColors } from '@/constants/colors';
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/contexts/theme-context';
 import { Link, router } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -211,9 +210,7 @@ export default function SignupScreen() {
         >
           {/* Header */}
           <View style={styles.header}>
-            <View style={styles.logoContainer}>
-              <Logo size="medium" showText={false} />
-            </View>
+        
             <Text style={styles.title}>Join EcoLake</Text>
             <Text style={styles.subtitle}>Start making an impact today</Text>
           </View>

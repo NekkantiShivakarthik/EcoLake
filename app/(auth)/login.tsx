@@ -1,20 +1,20 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Logo } from '@/components/ui/logo';
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/contexts/theme-context';
+import { Image } from 'expo-image';
 import { Link, router } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -86,6 +86,7 @@ export default function LoginScreen() {
     },
     logoContainer: {
       marginBottom: 12,
+      alignItems: 'center',
     },
     tagline: {
       fontSize: 16,
@@ -182,9 +183,13 @@ export default function LoginScreen() {
               </Text>
             </TouchableOpacity>
             <View style={styles.logoContainer}>
-              <Logo size="large" showText={true} textColor={colors.white} />
+              <Image 
+                source={require('@/assets/images/lake.png')} 
+                style={{ width: 150, height: 150 }} 
+                contentFit="contain"
+              />
+              <Text style={styles.tagline}>Protect Our Waters Together</Text>
             </View>
-            <Text style={styles.tagline}>Protect Our Waters Together</Text>
           </View>
 
           {/* Login Card */}

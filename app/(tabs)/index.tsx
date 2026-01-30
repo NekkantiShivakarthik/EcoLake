@@ -3,13 +3,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Alert,
-    RefreshControl,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  Alert,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -28,7 +28,7 @@ import { Report } from '@/types/database';
 
 export default function HomeScreen() {
   const { user: authUser } = useAuth();
-  const { actualTheme, setTheme } = useTheme();
+  const { actualTheme, setTheme, colors } = useTheme();
   const { stats } = useStats(authUser?.id);
   const { reports, refetch, loading: reportsLoading } = useReports();
   const { user, points } = useUserProfile(authUser?.id);
