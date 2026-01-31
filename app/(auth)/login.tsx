@@ -6,15 +6,15 @@ import { Image } from 'expo-image';
 import { Link, router } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -86,7 +86,6 @@ export default function LoginScreen() {
     },
     logoContainer: {
       marginBottom: 12,
-      alignItems: 'center',
     },
     tagline: {
       fontSize: 16,
@@ -182,13 +181,9 @@ export default function LoginScreen() {
                 {theme === 'system' ? '🌓' : actualTheme === 'dark' ? '🌙' : '☀️'}
               </Text>
             </TouchableOpacity>
-            <View style={styles.logoContainer}>
-              <Image 
-                source={require('@/assets/images/lake.png')} 
-                style={{ width: 150, height: 150 }} 
-                contentFit="contain"
-              />
-              <Text style={styles.tagline}>Protect Our Waters Together</Text>
+            <View>
+              <Image source="./assets/images/lake.png" alt="EcoLake Logo" style={{ width: 100, height: 100 }} />
+            <Text style={styles.tagline}>Protect Our Waters Together</Text>
             </View>
           </View>
 

@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { StatusChip } from '@/components/ui/chip';
 import { EcoColors } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 import { useAuth } from '@/contexts/auth-context';
 import { checkAndAwardBadges, useUserProfile } from '@/hooks/use-supabase';
 import { supabase } from '@/lib/supabase';
