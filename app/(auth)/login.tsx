@@ -6,15 +6,15 @@ import { Image } from 'expo-image';
 import { Link, router } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -158,6 +158,32 @@ export default function LoginScreen() {
       color: colors.white,
       textDecorationLine: 'underline',
     },
+    qrSection: {
+      alignItems: 'center',
+      marginTop: 32,
+      padding: 16,
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      borderRadius: 16,
+    },
+    qrTitle: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.white,
+      marginBottom: 12,
+    },
+    qrImage: {
+      width: 120,
+      height: 120,
+      borderRadius: 8,
+      backgroundColor: 'white',
+    },
+    qrSubtitle: {
+      fontSize: 12,
+      color: colors.white,
+      opacity: 0.8,
+      marginTop: 8,
+      textAlign: 'center',
+    },
   }), [colors]);
 
   return (
@@ -241,6 +267,17 @@ export default function LoginScreen() {
                 <Text style={styles.signUpLink}>Sign Up</Text>
               </TouchableOpacity>
             </Link>
+          </View>
+
+          {/* APK Download QR */}
+          <View style={styles.qrSection}>
+            <Text style={styles.qrTitle}>📱 Download Android APK</Text>
+            <Image
+              source={require('@/assets/images/apk-download-qr.png')}
+              style={styles.qrImage}
+              contentFit="contain"
+            />
+            <Text style={styles.qrSubtitle}>Scan to download the app</Text>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
