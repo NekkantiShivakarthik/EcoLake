@@ -208,7 +208,7 @@ export default function LoginScreen() {
               </Text>
             </TouchableOpacity>
             <View>
-              <Image source="./assets/images/lake.png" alt="EcoLake Logo" style={{ width: 100, height: 100 }} />
+              <Image source={require('/assets/images/image.png')}alt="EcoLake Logo" style={{ width: 100, height: 100 }} />
             <Text style={styles.tagline}>Protect Our Waters Together</Text>
             </View>
           </View>
