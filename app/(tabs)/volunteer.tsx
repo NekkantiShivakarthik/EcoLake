@@ -2,19 +2,19 @@ import { useBadgeNotification } from '@/components/ui/badge-notification';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { StatusChip } from '@/components/ui/chip';
-import { EcoColors } from '@/constants/colors';
-import { useTheme } from '@/contexts/theme-context';
 import { useAuth } from '@/contexts/auth-context';
+import { useTheme } from '@/contexts/theme-context';
 import { checkAndAwardBadges, useUserProfile } from '@/hooks/use-supabase';
 import { supabase } from '@/lib/supabase';
 import { decode } from 'base64-arraybuffer';
-import * as FileSystem from 'expo-file-system';
+import { File } from 'expo-file-system/next';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
     Image,
+    Platform,
     RefreshControl,
     ScrollView,
     StyleSheet,
@@ -153,26 +153,51 @@ export default function VolunteerWorkScreen() {
       const uploadedUrls: string[] = [];
 
       for (const asset of assets) {
-        // Read file as base64 using expo-file-system
-        const base64 = await FileSystem.readAsStringAsync(asset.uri, {
-          encoding: 'base64',
-        });
-        const arrayBuffer = decode(base64);
+        const fileExt = asset.fileName?.split('.').pop() || 'jpg';
+        const fileName = `proof_${user?.id}_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `reports/${fileName}`;
 
-        const fileName = `proof_${user?.id}_${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
-        const { data, error } = await supabase.storage
-          .from('report-photos')
-          .upload(fileName, arrayBuffer, {
-            contentType: asset.mimeType || 'image/jpeg',
-          });
+        let uploadError = null;
+        let uploadData = null;
 
-        if (error) throw error;
+        if (Platform.OS === 'web') {
+          // Web: Use fetch to get blob and upload directly
+          const response = await fetch(asset.uri);
+          const blob = await response.blob();
+          
+          const result = await supabase.storage
+            .from('report-photos')
+            .upload(filePath, blob, {
+              contentType: asset.mimeType || 'image/jpeg',
+              upsert: false,
+            });
+          uploadError = result.error;
+          uploadData = result.data;
+        } else {
+          // Mobile: Use new expo-file-system File API to read as base64
+          const file = new File(asset.uri);
+          const base64 = await file.base64();
+          const arrayBuffer = decode(base64);
+          
+          const result = await supabase.storage
+            .from('report-photos')
+            .upload(filePath, arrayBuffer, {
+              contentType: asset.mimeType || 'image/jpeg',
+              upsert: false,
+            });
+          uploadError = result.error;
+          uploadData = result.data;
+        }
 
-        const { data: urlData } = supabase.storage
-          .from('report-photos')
-          .getPublicUrl(data.path);
+        if (uploadError) throw uploadError;
 
-        uploadedUrls.push(urlData.publicUrl);
+        if (uploadData) {
+          const { data: urlData } = supabase.storage
+            .from('report-photos')
+            .getPublicUrl(uploadData.path);
+
+          uploadedUrls.push(urlData.publicUrl);
+        }
       }
 
       setProofPhotos([...proofPhotos, ...uploadedUrls]);
@@ -267,7 +292,7 @@ export default function VolunteerWorkScreen() {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
         <ScrollView style={styles.scrollView}>
-          <View style={styles.header}>
+          <View style={[styles.header, { backgroundColor: colors.headerBackground, borderBottomColor: colors.border }]}>
             <TouchableOpacity
               onPress={() => {
                 setSelectedReport(null);
@@ -275,9 +300,9 @@ export default function VolunteerWorkScreen() {
                 setNotes('');
               }}
             >
-              <Text style={styles.backButton}>← Back</Text>
+              <Text style={[styles.backButton, { color: colors.primary }]}>← Back</Text>
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Complete Work</Text>
+            <Text style={[styles.headerTitle, { color: colors.text }]}>Complete Work</Text>
           </View>
 
           <Card style={styles.card}>
@@ -285,9 +310,9 @@ export default function VolunteerWorkScreen() {
               <View style={styles.detailRow}>
                 <Text style={styles.detailIcon}>📍</Text>
                 <View style={styles.detailContent}>
-                  <Text style={styles.detailLabel}>Location</Text>
-                  <Text style={styles.detailValue}>{selectedReport.lake_name || 'Unknown'}</Text>
-                  <Text style={styles.coordinates}>
+                  <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>Location</Text>
+                  <Text style={[styles.detailValue, { color: colors.text }]}>{selectedReport.lake_name || 'Unknown'}</Text>
+                  <Text style={[styles.coordinates, { color: colors.textSecondary }]}>
                     {selectedReport.lat.toFixed(6)}, {selectedReport.lng.toFixed(6)}
                   </Text>
                   <TouchableOpacity
@@ -312,14 +337,14 @@ export default function VolunteerWorkScreen() {
                 </View>
               </View>
 
-              <View style={styles.divider} />
+              <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
-              <Text style={styles.detailSectionTitle}>Problem Description</Text>
-              <Text style={styles.description}>{selectedReport.description}</Text>
+              <Text style={[styles.detailSectionTitle, { color: colors.textSecondary }]}>Problem Description</Text>
+              <Text style={[styles.description, { color: colors.text }]}>{selectedReport.description}</Text>
             
               {selectedReport.photos && selectedReport.photos.length > 0 && (
                 <>
-                  <Text style={styles.detailSectionTitle}>Photos from Reporter</Text>
+                  <Text style={[styles.detailSectionTitle, { color: colors.textSecondary }]}>Photos from Reporter</Text>
                   <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
@@ -332,26 +357,26 @@ export default function VolunteerWorkScreen() {
                 </>
               )}
 
-              <View style={styles.divider} />
+              <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
               <View style={styles.infoRow}>
-                <Text style={styles.label}>Severity:</Text>
-                <Text style={styles.value}>{'⭐'.repeat(selectedReport.severity || 1)}</Text>
+                <Text style={[styles.label, { color: colors.textSecondary }]}>Severity:</Text>
+                <Text style={[styles.value, { color: colors.text }]}>{'⭐'.repeat(selectedReport.severity || 1)}</Text>
               </View>
               <View style={styles.infoRow}>
-                <Text style={styles.label}>Category:</Text>
-                <Text style={styles.value}>{selectedReport.category || 'Other'}</Text>
+                <Text style={[styles.label, { color: colors.textSecondary }]}>Category:</Text>
+                <Text style={[styles.value, { color: colors.text }]}>{selectedReport.category || 'Other'}</Text>
               </View>
               <View style={styles.infoRow}>
-                <Text style={styles.label}>Points to earn:</Text>
-                <Text style={styles.pointsValue}>{(selectedReport.severity || 1) * 10} pts 🎯</Text>
+                <Text style={[styles.label, { color: colors.textSecondary }]}>Points to earn:</Text>
+                <Text style={[styles.pointsValue, { color: colors.success }]}>{(selectedReport.severity || 1) * 10} pts 🎯</Text>
               </View>
             </View>
           </Card>
 
           <Card style={styles.card}>
-            <Text style={styles.sectionTitle}>Upload Proof Photos</Text>
-            <Text style={styles.subtitle}>Show before/after photos of your cleanup work</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Upload Proof Photos</Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Show before/after photos of your cleanup work</Text>
 
             <Button
               title={uploading ? 'Uploading...' : '📷 Add Photos'}
@@ -379,11 +404,11 @@ export default function VolunteerWorkScreen() {
           </Card>
 
           <Card style={styles.card}>
-            <Text style={styles.sectionTitle}>Notes (Optional)</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Notes (Optional)</Text>
             <TextInput
-              style={styles.notesInput}
+              style={[styles.notesInput, { borderColor: colors.border, color: colors.text, backgroundColor: colors.inputBackground }]}
               placeholder="Add any notes about the cleanup work..."
-              placeholderTextColor={EcoColors.gray400}
+              placeholderTextColor={colors.textTertiary}
               value={notes}
               onChangeText={setNotes}
               multiline
@@ -447,7 +472,7 @@ export default function VolunteerWorkScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.headerBackground, borderBottomColor: colors.border }]}>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Volunteer Work</Text>
         <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>Claim reports and earn points! 🌟</Text>
       </View>
@@ -466,15 +491,15 @@ export default function VolunteerWorkScreen() {
         {/* How it Works Guide */}
         {myReports.length === 0 && (
           <Card style={styles.card}>
-            <Text style={styles.guideTitle}>🚀 How It Works</Text>
+            <Text style={[styles.guideTitle, { color: colors.text }]}>🚀 How It Works</Text>
             <View style={styles.guideSteps}>
               <View style={styles.guideStep}>
                 <View style={styles.stepNumber}>
                   <Text style={styles.stepNumberText}>1</Text>
                 </View>
                 <View style={styles.stepContent}>
-                  <Text style={styles.stepTitle}>Claim a Report</Text>
-                  <Text style={styles.stepDescription}>{`Browse available reports and tap "Claim Report"`}</Text>
+                  <Text style={[styles.stepTitle, { color: colors.text }]}>Claim a Report</Text>
+                  <Text style={[styles.stepDescription, { color: colors.textSecondary }]}>{`Browse available reports and tap "Claim Report"`}</Text>
                 </View>
               </View>
               <View style={styles.guideStep}>
@@ -482,8 +507,8 @@ export default function VolunteerWorkScreen() {
                   <Text style={styles.stepNumberText}>2</Text>
                 </View>
                 <View style={styles.stepContent}>
-                  <Text style={styles.stepTitle}>Clean the Lake</Text>
-                  <Text style={styles.stepDescription}>Visit the location and clean up the pollution</Text>
+                  <Text style={[styles.stepTitle, { color: colors.text }]}>Clean the Lake</Text>
+                  <Text style={[styles.stepDescription, { color: colors.textSecondary }]}>Visit the location and clean up the pollution</Text>
                 </View>
               </View>
               <View style={styles.guideStep}>
@@ -491,8 +516,8 @@ export default function VolunteerWorkScreen() {
                   <Text style={styles.stepNumberText}>3</Text>
                 </View>
                 <View style={styles.stepContent}>
-                  <Text style={styles.stepTitle}>Upload Proof</Text>
-                  <Text style={styles.stepDescription}>Take photos showing the cleaned area</Text>
+                  <Text style={[styles.stepTitle, { color: colors.text }]}>Upload Proof</Text>
+                  <Text style={[styles.stepDescription, { color: colors.textSecondary }]}>Take photos showing the cleaned area</Text>
                 </View>
               </View>
               <View style={styles.guideStep}>
@@ -500,8 +525,8 @@ export default function VolunteerWorkScreen() {
                   <Text style={styles.stepNumberText}>4</Text>
                 </View>
                 <View style={styles.stepContent}>
-                  <Text style={styles.stepTitle}>Earn Points!</Text>
-                  <Text style={styles.stepDescription}>Get 10-50 points based on severity level</Text>
+                  <Text style={[styles.stepTitle, { color: colors.text }]}>Earn Points!</Text>
+                  <Text style={[styles.stepDescription, { color: colors.textSecondary }]}>Get 10-50 points based on severity level</Text>
                 </View>
               </View>
             </View>
@@ -511,7 +536,7 @@ export default function VolunteerWorkScreen() {
         {/* My Active Work */}
         {myReports.length > 0 && (
           <>
-            <Text style={styles.sectionHeader}>My Active Work</Text>
+            <Text style={[styles.sectionHeader, { color: colors.text }]}>My Active Work</Text>
             {myReports.map(report => (
               <ReportCard
                 key={report.id}
@@ -524,11 +549,11 @@ export default function VolunteerWorkScreen() {
         )}
 
         {/* Available Reports */}
-        <Text style={styles.sectionHeader}>Available Reports</Text>
+        <Text style={[styles.sectionHeader, { color: colors.text }]}>Available Reports</Text>
         {availableReports.length === 0 ? (
           <Card style={styles.card}>
-            <Text style={styles.emptyText}>No reports available right now</Text>
-            <Text style={styles.emptySubtext}>Check back later for new cleanup opportunities!</Text>
+            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No reports available right now</Text>
+            <Text style={[styles.emptySubtext, { color: colors.textTertiary }]}>Check back later for new cleanup opportunities!</Text>
           </Card>
         ) : (
           availableReports.map(report => (
@@ -552,23 +577,24 @@ interface ReportCardProps {
 }
 
 function ReportCard({ report, onPress, buttonTitle }: ReportCardProps) {
+  const { colors } = useTheme();
   return (
     <Card style={styles.reportCard}>
       <View style={styles.reportHeader}>
         <StatusChip status={report.status as any} />
-        <Text style={styles.pointsBadge}>+{(report.severity || 1) * 10} pts</Text>
+        <Text style={[styles.pointsBadge, { color: colors.success }]}>+{(report.severity || 1) * 10} pts</Text>
       </View>
 
       {report.photos && report.photos.length > 0 && (
         <Image source={{ uri: report.photos[0] }} style={styles.reportImage} />
       )}
 
-      <Text style={styles.reportDescription} numberOfLines={2}>
+      <Text style={[styles.reportDescription, { color: colors.textSecondary }]} numberOfLines={2}>
         {report.description}
       </Text>
 
       <View style={styles.reportInfo}>
-        <Text style={styles.reportCategory}>📍 {report.lake_name || 'Unknown Location'}</Text>
+        <Text style={[styles.reportCategory, { color: colors.textSecondary }]}>📍 {report.lake_name || 'Unknown Location'}</Text>
         <Text style={styles.reportSeverity}>{'⭐'.repeat(report.severity || 1)}</Text>
       </View>
 
@@ -580,42 +606,34 @@ function ReportCard({ report, onPress, buttonTitle }: ReportCardProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: EcoColors.gray50,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: EcoColors.gray50,
   },
   scrollView: {
     flex: 1,
   },
   header: {
     padding: 20,
-    backgroundColor: EcoColors.white,
     borderBottomWidth: 1,
-    borderBottomColor: EcoColors.gray200,
   },
   backButton: {
     fontSize: 16,
-    color: EcoColors.primary,
     marginBottom: 8,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: EcoColors.gray900,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: EcoColors.gray600,
     marginTop: 4,
   },
   sectionHeader: {
     fontSize: 18,
     fontWeight: '600',
-    color: EcoColors.gray900,
     marginHorizontal: 20,
     marginTop: 20,
     marginBottom: 12,
@@ -626,23 +644,23 @@ const styles = StyleSheet.create({
   },
   pointsCard: {
     alignItems: 'center',
-    backgroundColor: EcoColors.primary,
+    backgroundColor: '#0E7490',
     marginTop: 20,
   },
   pointsLabel: {
     fontSize: 14,
-    color: EcoColors.white,
+    color: '#FFFFFF',
     opacity: 0.9,
   },
   pointsDisplay: {
     fontSize: 48,
     fontWeight: 'bold',
-    color: EcoColors.white,
+    color: '#FFFFFF',
     marginVertical: 8,
   },
   pointsSubtext: {
     fontSize: 12,
-    color: EcoColors.white,
+    color: '#FFFFFF',
     opacity: 0.8,
   },
   reportCard: {
@@ -658,17 +676,15 @@ const styles = StyleSheet.create({
   pointsBadge: {
     fontSize: 14,
     fontWeight: '600',
-    color: EcoColors.success,
   },
   reportImage: {
     width: '100%',
     height: 150,
-    borderRadius: 8,
+    borderRadius: 10,
     marginBottom: 12,
   },
   reportDescription: {
     fontSize: 14,
-    color: EcoColors.gray700,
     marginBottom: 12,
   },
   reportInfo: {
@@ -679,31 +695,26 @@ const styles = StyleSheet.create({
   },
   reportCategory: {
     fontSize: 12,
-    color: EcoColors.gray600,
   },
   reportSeverity: {
     fontSize: 14,
   },
   emptyText: {
     fontSize: 16,
-    color: EcoColors.gray600,
     textAlign: 'center',
     marginBottom: 8,
   },
   emptySubtext: {
     fontSize: 14,
-    color: EcoColors.gray500,
     textAlign: 'center',
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: EcoColors.gray900,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 14,
-    color: EcoColors.gray600,
     marginBottom: 16,
   },
   reportDetails: {
@@ -723,7 +734,6 @@ const styles = StyleSheet.create({
   detailLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: EcoColors.gray500,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 4,
@@ -731,12 +741,10 @@ const styles = StyleSheet.create({
   detailValue: {
     fontSize: 16,
     fontWeight: '600',
-    color: EcoColors.gray900,
     marginBottom: 4,
   },
   coordinates: {
     fontSize: 12,
-    color: EcoColors.gray600,
     fontFamily: 'monospace',
   },
   mapButton: {
@@ -744,28 +752,25 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: EcoColors.primary,
-    borderRadius: 8,
+    backgroundColor: '#0E7490',
+    borderRadius: 10,
   },
   mapButtonText: {
     fontSize: 13,
     fontWeight: '600',
-    color: EcoColors.white,
+    color: '#FFFFFF',
   },
   detailSectionTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: EcoColors.gray700,
     marginBottom: 8,
   },
   divider: {
     height: 1,
-    backgroundColor: EcoColors.gray200,
     marginVertical: 8,
   },
   description: {
     fontSize: 14,
-    color: EcoColors.gray700,
     lineHeight: 20,
     marginBottom: 12,
   },
@@ -778,7 +783,7 @@ const styles = StyleSheet.create({
   photo: {
     width: 100,
     height: 100,
-    borderRadius: 8,
+    borderRadius: 10,
   },
   infoRow: {
     flexDirection: 'row',
@@ -788,16 +793,13 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: EcoColors.gray600,
   },
   value: {
     fontSize: 14,
-    color: EcoColors.gray900,
   },
   pointsValue: {
     fontSize: 16,
     fontWeight: '600',
-    color: EcoColors.success,
   },
   uploadButton: {
     marginBottom: 16,
@@ -813,13 +815,13 @@ const styles = StyleSheet.create({
   proofPhoto: {
     width: 100,
     height: 100,
-    borderRadius: 8,
+    borderRadius: 10,
   },
   removeButton: {
     position: 'absolute',
     top: -8,
     right: -8,
-    backgroundColor: EcoColors.error,
+    backgroundColor: '#EF4444',
     borderRadius: 12,
     width: 24,
     height: 24,
@@ -827,17 +829,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   removeButtonText: {
-    color: EcoColors.white,
+    color: '#FFFFFF',
     fontSize: 12,
     fontWeight: 'bold',
   },
   notesInput: {
     borderWidth: 1,
-    borderColor: EcoColors.gray300,
-    borderRadius: 8,
+    borderRadius: 10,
     padding: 12,
     fontSize: 14,
-    color: EcoColors.gray900,
     minHeight: 100,
     textAlignVertical: 'top',
   },
@@ -855,7 +855,6 @@ const styles = StyleSheet.create({
   guideTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: EcoColors.gray900,
     marginBottom: 16,
   },
   guideSteps: {
@@ -870,14 +869,14 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: EcoColors.primary,
+    backgroundColor: '#0E7490',
     alignItems: 'center',
     justifyContent: 'center',
   },
   stepNumberText: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: EcoColors.white,
+    color: '#FFFFFF',
   },
   stepContent: {
     flex: 1,
@@ -885,12 +884,10 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: EcoColors.gray800,
     marginBottom: 2,
   },
   stepDescription: {
     fontSize: 13,
-    color: EcoColors.gray600,
     lineHeight: 18,
   },
 });

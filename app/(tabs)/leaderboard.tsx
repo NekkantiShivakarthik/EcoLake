@@ -14,7 +14,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, CardSkeleton, EmptyState } from '@/components/ui';
 import { Card } from '@/components/ui/card';
 import { LeaderboardItem } from '@/components/ui/leaderboard-item';
-import { EcoColors } from '@/constants/colors';
 import { useTheme } from '@/contexts/theme-context';
 import { useLeaderboard } from '@/hooks/use-supabase';
 
@@ -63,6 +62,7 @@ export default function LeaderboardScreen() {
               style={[
                 styles.filterButton,
                 activeFilter === filter.key && styles.filterButtonActive,
+                activeFilter === filter.key && { backgroundColor: colors.cardBackground },
               ]}
               onPress={() => setActiveFilter(filter.key)}
             >
@@ -89,19 +89,19 @@ export default function LeaderboardScreen() {
         <View style={styles.podiumContainer}>
           {/* 2nd Place */}
           <View style={[styles.podiumItem, styles.podiumSecond]}>
-            <View style={[styles.podiumPedestal, styles.pedestalSecond]}>
+            <View style={[styles.podiumPedestal, styles.pedestalSecond, { backgroundColor: colors.cardBackground }]}>
               <Avatar
                 name={topThree[1]?.user?.name || 'Anonymous'}
                 size={52}
                 badge="🥈"
               />
-              <Text style={styles.podiumName} numberOfLines={1}>
+              <Text style={[styles.podiumName, { color: colors.text }]} numberOfLines={1}>
                 {topThree[1]?.user?.name || 'Anonymous'}
               </Text>
-              <View style={styles.pointsBadge}>
-                <Text style={styles.podiumPoints}>{topThree[1]?.total_points ?? 0}</Text>
+              <View style={[styles.pointsBadge, { backgroundColor: colors.surface }]}>
+                <Text style={[styles.podiumPoints, { color: colors.text }]}>{topThree[1]?.total_points ?? 0}</Text>
               </View>
-              <Text style={styles.rankNumber}>2</Text>
+              <Text style={[styles.rankNumber, { color: colors.border }]}>2</Text>
             </View>
           </View>
 
@@ -110,13 +110,13 @@ export default function LeaderboardScreen() {
             <View style={styles.crownContainer}>
               <Text style={styles.crown}>👑</Text>
             </View>
-            <View style={[styles.podiumPedestal, styles.pedestalFirst]}>
+            <View style={[styles.podiumPedestal, styles.pedestalFirst, { backgroundColor: colors.cardBackground }]}>
               <Avatar
                 name={topThree[0]?.user?.name || 'Anonymous'}
                 size={68}
                 badge="🥇"
               />
-              <Text style={[styles.podiumName, styles.podiumNameFirst]} numberOfLines={1}>
+              <Text style={[styles.podiumName, styles.podiumNameFirst, { color: colors.text }]} numberOfLines={1}>
                 {topThree[0]?.user?.name || 'Anonymous'}
               </Text>
               <View style={[styles.pointsBadge, styles.pointsBadgeFirst]}>
@@ -130,19 +130,19 @@ export default function LeaderboardScreen() {
 
           {/* 3rd Place */}
           <View style={[styles.podiumItem, styles.podiumThird]}>
-            <View style={[styles.podiumPedestal, styles.pedestalThird]}>
+            <View style={[styles.podiumPedestal, styles.pedestalThird, { backgroundColor: colors.cardBackground }]}>
               <Avatar
                 name={topThree[2]?.user?.name || 'Anonymous'}
                 size={48}
                 badge="🥉"
               />
-              <Text style={styles.podiumName} numberOfLines={1}>
+              <Text style={[styles.podiumName, { color: colors.text }]} numberOfLines={1}>
                 {topThree[2]?.user?.name || 'Anonymous'}
               </Text>
-              <View style={styles.pointsBadge}>
-                <Text style={styles.podiumPoints}>{topThree[2]?.total_points ?? 0}</Text>
+              <View style={[styles.pointsBadge, { backgroundColor: colors.surface }]}>
+                <Text style={[styles.podiumPoints, { color: colors.text }]}>{topThree[2]?.total_points ?? 0}</Text>
               </View>
-              <Text style={styles.rankNumber}>3</Text>
+              <Text style={[styles.rankNumber, { color: colors.border }]}>3</Text>
             </View>
           </View>
         </View>
@@ -151,7 +151,7 @@ export default function LeaderboardScreen() {
       {/* Stats Banner */}
       <Card variant="elevated" style={styles.statsBanner}>
         <LinearGradient
-          colors={[EcoColors.primary, EcoColors.primaryDark]}
+          colors={[colors.primary, colors.primaryDark]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.statsGradient}
@@ -223,7 +223,6 @@ export default function LeaderboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: EcoColors.gray50,
   },
   headerGradient: {
     paddingBottom: 20,
@@ -238,7 +237,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: EcoColors.white,
+    color: '#FFFFFF',
   },
   subtitle: {
     fontSize: 14,
@@ -260,13 +259,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
     gap: 4,
   },
-  filterButtonActive: {
-    backgroundColor: EcoColors.white,
-  },
+  filterButtonActive: {},
   filterText: {
     fontSize: 12,
     fontWeight: '600',
-    color: EcoColors.white,
+    color: '#FFFFFF',
   },
   filterTextActive: {
     color: '#FF8C00',
@@ -290,7 +287,6 @@ const styles = StyleSheet.create({
   podiumThird: {},
   podiumPedestal: {
     alignItems: 'center',
-    backgroundColor: EcoColors.white,
     borderRadius: 16,
     paddingVertical: 16,
     paddingHorizontal: 8,
@@ -323,7 +319,6 @@ const styles = StyleSheet.create({
   podiumName: {
     fontSize: 12,
     fontWeight: '600',
-    color: EcoColors.gray800,
     textAlign: 'center',
     marginTop: 8,
     maxWidth: 80,
@@ -333,7 +328,6 @@ const styles = StyleSheet.create({
     maxWidth: 100,
   },
   pointsBadge: {
-    backgroundColor: EcoColors.gray100,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
@@ -344,7 +338,6 @@ const styles = StyleSheet.create({
   },
   podiumPoints: {
     fontSize: 12,
-    color: EcoColors.gray700,
     fontWeight: '700',
   },
   podiumPointsFirst: {
@@ -357,7 +350,6 @@ const styles = StyleSheet.create({
     right: 8,
     fontSize: 24,
     fontWeight: 'bold',
-    color: EcoColors.gray200,
   },
   rankNumberFirst: {
     color: 'rgba(255, 215, 0, 0.3)',
@@ -397,7 +389,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: EcoColors.white,
+    color: '#FFFFFF',
   },
   statLabel: {
     fontSize: 12,
@@ -416,7 +408,6 @@ const styles = StyleSheet.create({
   listHeader: {
     fontSize: 16,
     fontWeight: '600',
-    color: EcoColors.gray700,
   },
   listContent: {
     paddingBottom: 100,

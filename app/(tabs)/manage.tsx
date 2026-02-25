@@ -17,7 +17,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Card } from '@/components/ui/card';
 import { StatusChip } from '@/components/ui/chip';
-import { EcoColors } from '@/constants/colors';
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/contexts/theme-context';
 import { supabase } from '@/lib/supabase';
@@ -201,10 +200,10 @@ export default function ManageScreen() {
   ];
 
   const statusOptions = [
-    { value: 'submitted', label: 'Submitted', icon: '📝', color: EcoColors.info },
-    { value: 'verified', label: 'Verified', icon: '✅', color: EcoColors.primary },
-    { value: 'assigned', label: 'Assigned', icon: '👤', color: EcoColors.accent },
-    { value: 'rejected', label: 'Rejected', icon: '❌', color: EcoColors.error },
+    { value: 'submitted', label: 'Submitted', icon: '📝', color: colors.info },
+    { value: 'verified', label: 'Verified', icon: '✅', color: colors.primary },
+    { value: 'assigned', label: 'Assigned', icon: '👤', color: colors.accent },
+    { value: 'rejected', label: 'Rejected', icon: '❌', color: colors.error },
   ];
 
   // Check if user is admin
@@ -224,7 +223,7 @@ export default function ManageScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       {/* Gradient Header */}
       <LinearGradient
-        colors={[EcoColors.primary, EcoColors.primaryDark]}
+        colors={[colors.primary, colors.primaryDark]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.headerGradient}
@@ -237,10 +236,10 @@ export default function ManageScreen() {
           </View>
           <View style={styles.headerActions}>
             <TouchableOpacity style={styles.iconButton} onPress={() => setTheme(actualTheme === 'dark' ? 'light' : 'dark')}>
-              <Ionicons name={actualTheme === 'dark' ? 'sunny' : 'moon'} size={22} color={EcoColors.white} />
+              <Ionicons name={actualTheme === 'dark' ? 'sunny' : 'moon'} size={22} color="#FFFFFF" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.iconButton} onPress={onRefresh}>
-              <Ionicons name="refresh" size={22} color={EcoColors.white} />
+              <Ionicons name="refresh" size={22} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
         </View>
@@ -275,7 +274,7 @@ export default function ManageScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        style={styles.filterScroll}
+        style={[styles.filterScroll, { backgroundColor: colors.cardBackground, borderBottomColor: colors.border }]}
         contentContainerStyle={styles.filterContainer}
       >
         {filterButtons.map((btn) => (
@@ -283,13 +282,15 @@ export default function ManageScreen() {
             key={btn.key}
             style={[
               styles.filterButton,
-              filter === btn.key && styles.filterButtonActive,
+              { backgroundColor: colors.surface },
+              filter === btn.key && [styles.filterButtonActive, { backgroundColor: colors.primary }],
             ]}
             onPress={() => setFilter(btn.key as typeof filter)}
           >
             <Text
               style={[
                 styles.filterButtonText,
+                { color: colors.text },
                 filter === btn.key && styles.filterButtonTextActive,
               ]}
             >
@@ -297,11 +298,13 @@ export default function ManageScreen() {
             </Text>
             <View style={[
               styles.filterBadge,
+              { backgroundColor: colors.background },
               filter === btn.key && styles.filterBadgeActive,
             ]}>
               <Text style={[
                 styles.filterBadgeText,
-                filter === btn.key && styles.filterBadgeTextActive,
+                { color: colors.text },
+                filter === btn.key && [styles.filterBadgeTextActive, { color: colors.primary }],
               ]}>
                 {btn.count}
               </Text>
@@ -319,55 +322,55 @@ export default function ManageScreen() {
       >
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={EcoColors.primary} />
+            <ActivityIndicator size="large" color={colors.primary} />
           </View>
         ) : reports.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyIcon}>📋</Text>
-            <Text style={styles.emptyTitle}>No Reports</Text>
-            <Text style={styles.emptyMessage}>No reports match the selected filter</Text>
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>No Reports</Text>
+            <Text style={[styles.emptyMessage, { color: colors.textSecondary }]}>No reports match the selected filter</Text>
           </View>
         ) : (
           reports.map((report) => (
-            <Card key={report.id} style={styles.reportCard} variant="elevated">
+            <Card key={report.id} style={[styles.reportCard, { borderColor: colors.border }]} variant="elevated">
               <View style={styles.reportHeader}>
                 <View style={styles.reportHeaderLeft}>
                   <StatusChip status={report.status as any} />
                   <View style={styles.reportDateContainer}>
-                    <Ionicons name="time-outline" size={12} color={EcoColors.gray500} />
-                    <Text style={styles.reportDate}>
+                    <Ionicons name="time-outline" size={12} color={colors.textSecondary} />
+                    <Text style={[styles.reportDate, { color: colors.textSecondary }]}>
                       {new Date(report.created_at).toLocaleDateString()}
                     </Text>
                   </View>
                 </View>
-                <View style={styles.reportIdBadge}>
-                  <Text style={styles.reportId}>#{report.id.slice(0, 8)}</Text>
+                <View style={[styles.reportIdBadge, { backgroundColor: colors.surface }]}>
+                  <Text style={[styles.reportId, { color: colors.textSecondary }]}>#{report.id.slice(0, 8)}</Text>
                 </View>
               </View>
 
               <View style={styles.reportContent}>
                 <View style={styles.reportInfo}>
                   <View style={styles.reportLocationRow}>
-                    <Ionicons name="location" size={16} color={EcoColors.primary} />
-                    <Text style={styles.reportLocation}>
+                    <Ionicons name="location" size={16} color={colors.primary} />
+                    <Text style={[styles.reportLocation, { color: colors.text }]}>
                       {report.lake_name || 'Unknown Location'}
                     </Text>
                   </View>
                   <View style={styles.reportMetaRow}>
-                    <View style={styles.categoryBadge}>
-                      <Text style={styles.reportCategory}>{report.category}</Text>
+                    <View style={[styles.categoryBadge, { backgroundColor: colors.primary + '20' }]}>
+                      <Text style={[styles.reportCategory, { color: colors.primary }]}>{report.category}</Text>
                     </View>
-                    <View style={styles.severityBadge}>
+                    <View style={[styles.severityBadge, { backgroundColor: colors.accent + '20' }]}>
                       <Text style={styles.severityText}>{'⭐'.repeat(report.severity)}</Text>
                     </View>
                   </View>
-                  <Text style={styles.reportDescription} numberOfLines={2}>
+                  <Text style={[styles.reportDescription, { color: colors.text }]} numberOfLines={2}>
                     {report.description}
                   </Text>
                   {report.user && (
                     <View style={styles.reportUserRow}>
-                      <Ionicons name="person-circle-outline" size={14} color={EcoColors.gray500} />
-                      <Text style={styles.reportUser}>
+                      <Ionicons name="person-circle-outline" size={14} color={colors.textSecondary} />
+                      <Text style={[styles.reportUser, { color: colors.textSecondary }]}>
                         {report.user.name}
                       </Text>
                     </View>
@@ -384,34 +387,34 @@ export default function ManageScreen() {
 
               <View style={styles.reportActions}>
                 <TouchableOpacity
-                  style={[styles.actionButton, styles.statusButton]}
+                  style={[styles.actionButton, styles.statusButton, { backgroundColor: colors.primary + '20', borderColor: colors.primary }]}
                   onPress={() => {
                     setSelectedReport(report);
                     setShowStatusModal(true);
                   }}
                 >
-                  <Ionicons name="create-outline" size={16} color={EcoColors.primary} />
-                  <Text style={styles.statusButtonText}>Update Status</Text>
+                  <Ionicons name="create-outline" size={16} color={colors.primary} />
+                  <Text style={[styles.statusButtonText, { color: colors.primary }]}>Update Status</Text>
                 </TouchableOpacity>
 
                 {(report.status === 'verified' || report.status === 'submitted') && (
                   <TouchableOpacity
-                    style={[styles.actionButton, styles.assignButton]}
+                    style={[styles.actionButton, styles.assignButton, { backgroundColor: colors.primary }]}
                     onPress={() => {
                       setSelectedReport(report);
                       setShowVolunteerModal(true);
                     }}
                   >
-                    <Ionicons name="person-add-outline" size={16} color={EcoColors.white} />
+                    <Ionicons name="person-add-outline" size={16} color="#FFFFFF" />
                     <Text style={styles.assignButtonText}>Assign</Text>
                   </TouchableOpacity>
                 )}
 
                 <TouchableOpacity
-                  style={[styles.actionButton, styles.deleteButton]}
+                  style={[styles.actionButton, styles.deleteButton, { backgroundColor: colors.error }]}
                   onPress={() => deleteReport(report)}
                 >
-                  <Ionicons name="trash-outline" size={16} color={EcoColors.white} />
+                  <Ionicons name="trash-outline" size={16} color="#FFFFFF" />
                   <Text style={styles.deleteButtonText}>Delete</Text>
                 </TouchableOpacity>
               </View>
@@ -428,34 +431,34 @@ export default function ManageScreen() {
         onRequestClose={() => setShowVolunteerModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Assign to Volunteer</Text>
+          <View style={[styles.modalContent, { backgroundColor: colors.cardBackground }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Assign to Volunteer</Text>
               <TouchableOpacity onPress={() => setShowVolunteerModal(false)}>
-                <Ionicons name="close" size={24} color={EcoColors.gray600} />
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
             <ScrollView style={styles.modalScroll}>
               {volunteers.length === 0 ? (
-                <Text style={styles.noVolunteersText}>No volunteers available</Text>
+                <Text style={[styles.noVolunteersText, { color: colors.textSecondary }]}>No volunteers available</Text>
               ) : (
                 volunteers.map((volunteer) => (
                   <TouchableOpacity
                     key={volunteer.id}
-                    style={styles.volunteerItem}
+                    style={[styles.volunteerItem, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}
                     onPress={() => assignToVolunteer(volunteer.id)}
                   >
-                    <View style={styles.volunteerAvatar}>
+                    <View style={[styles.volunteerAvatar, { backgroundColor: colors.primary }]}>
                       <Text style={styles.volunteerAvatarText}>
                         {volunteer.name.charAt(0).toUpperCase()}
                       </Text>
                     </View>
                     <View style={styles.volunteerInfo}>
-                      <Text style={styles.volunteerName}>{volunteer.name}</Text>
-                      <Text style={styles.volunteerEmail}>{volunteer.email}</Text>
+                      <Text style={[styles.volunteerName, { color: colors.text }]}>{volunteer.name}</Text>
+                      <Text style={[styles.volunteerEmail, { color: colors.textSecondary }]}>{volunteer.email}</Text>
                     </View>
-                    <Ionicons name="chevron-forward" size={20} color={EcoColors.gray400} />
+                    <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
                   </TouchableOpacity>
                 ))
               )}
@@ -472,11 +475,11 @@ export default function ManageScreen() {
         onRequestClose={() => setShowStatusModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Update Status</Text>
+          <View style={[styles.modalContent, { backgroundColor: colors.cardBackground }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Update Status</Text>
               <TouchableOpacity onPress={() => setShowStatusModal(false)}>
-                <Ionicons name="close" size={24} color={EcoColors.gray600} />
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
@@ -486,12 +489,13 @@ export default function ManageScreen() {
                   key={option.value}
                   style={[
                     styles.statusOption,
-                    selectedReport?.status === option.value && styles.statusOptionActive,
+                    { backgroundColor: colors.surface },
+                    selectedReport?.status === option.value && [styles.statusOptionActive, { backgroundColor: colors.primary + '20', borderColor: colors.primary }],
                   ]}
                   onPress={() => updateStatus(option.value)}
                 >
                   <Text style={styles.statusOptionIcon}>{option.icon}</Text>
-                  <Text style={styles.statusOptionLabel}>{option.label}</Text>
+                  <Text style={[styles.statusOptionLabel, { color: colors.text }]}>{option.label}</Text>
                   {selectedReport?.status === option.value && (
                     <Ionicons name="checkmark-circle" size={20} color={option.color} />
                   )}
@@ -508,7 +512,6 @@ export default function ManageScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: EcoColors.gray50,
   },
   centerContainer: {
     flex: 1,
@@ -523,12 +526,10 @@ const styles = StyleSheet.create({
   noAccessTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: EcoColors.gray800,
     marginBottom: 8,
   },
   noAccessMessage: {
     fontSize: 16,
-    color: EcoColors.gray600,
     textAlign: 'center',
   },
   headerGradient: {
@@ -554,12 +555,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '800',
-    color: EcoColors.white,
+    color: '#FFFFFF',
     letterSpacing: 0.5,
   },
   subtitle: {
     fontSize: 14,
-    color: EcoColors.white,
+    color: '#FFFFFF',
     opacity: 0.85,
     marginTop: 2,
   },
@@ -609,21 +610,19 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: '800',
-    color: EcoColors.white,
+    color: '#FFFFFF',
     marginBottom: 2,
   },
   statLabel: {
     fontSize: 11,
-    color: EcoColors.white,
+    color: '#FFFFFF',
     opacity: 0.9,
     fontWeight: '600',
     textAlign: 'center',
   },
   filterScroll: {
     maxHeight: 60,
-    backgroundColor: EcoColors.white,
     borderBottomWidth: 1,
-    borderBottomColor: EcoColors.gray200,
   },
   filterContainer: {
     paddingHorizontal: 16,
@@ -636,16 +635,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 10,
     borderRadius: 24,
-    backgroundColor: EcoColors.gray100,
     gap: 8,
     marginRight: 10,
     borderWidth: 1.5,
     borderColor: 'transparent',
   },
   filterButtonActive: {
-    backgroundColor: EcoColors.primary,
-    borderColor: EcoColors.primaryDark,
-    shadowColor: EcoColors.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -654,28 +649,23 @@ const styles = StyleSheet.create({
   filterButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: EcoColors.gray700,
   },
   filterButtonTextActive: {
-    color: EcoColors.white,
+    color: '#FFFFFF',
   },
   filterBadge: {
-    backgroundColor: EcoColors.white,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 10,
   },
   filterBadgeActive: {
-    backgroundColor: EcoColors.white,
+    backgroundColor: '#FFFFFF',
   },
   filterBadgeText: {
     fontSize: 12,
     fontWeight: '700',
-    color: EcoColors.gray700,
   },
-  filterBadgeTextActive: {
-    color: EcoColors.primary,
-  },
+  filterBadgeTextActive: {},
   scrollView: {
     flex: 1,
   },
@@ -694,19 +684,16 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: EcoColors.gray800,
     marginBottom: 8,
   },
   emptyMessage: {
     fontSize: 16,
-    color: EcoColors.gray600,
     textAlign: 'center',
   },
   reportCard: {
     marginHorizontal: 16,
     marginVertical: 8,
     borderWidth: 1,
-    borderColor: EcoColors.gray200,
   },
   reportHeader: {
     flexDirection: 'row',
@@ -726,18 +713,15 @@ const styles = StyleSheet.create({
   },
   reportDate: {
     fontSize: 12,
-    color: EcoColors.gray500,
     fontWeight: '500',
   },
   reportIdBadge: {
-    backgroundColor: EcoColors.gray100,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   reportId: {
     fontSize: 11,
-    color: EcoColors.gray600,
     fontFamily: 'monospace',
     fontWeight: '700',
   },
@@ -758,7 +742,6 @@ const styles = StyleSheet.create({
   reportLocation: {
     fontSize: 16,
     fontWeight: '700',
-    color: EcoColors.gray900,
     flex: 1,
   },
   reportMetaRow: {
@@ -768,7 +751,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   categoryBadge: {
-    backgroundColor: EcoColors.primaryLight + '30',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
@@ -776,12 +758,10 @@ const styles = StyleSheet.create({
   reportCategory: {
     fontSize: 12,
     fontWeight: '700',
-    color: EcoColors.primary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   severityBadge: {
-    backgroundColor: EcoColors.accent + '20',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
@@ -791,7 +771,6 @@ const styles = StyleSheet.create({
   },
   reportDescription: {
     fontSize: 14,
-    color: EcoColors.gray700,
     marginBottom: 8,
   },
   reportUserRow: {
@@ -801,7 +780,6 @@ const styles = StyleSheet.create({
   },
   reportUser: {
     fontSize: 12,
-    color: EcoColors.gray600,
     fontWeight: '500',
   },
   reportThumbnail: {
@@ -824,19 +802,14 @@ const styles = StyleSheet.create({
   },
   statusButton: {
     flex: 1,
-    backgroundColor: EcoColors.primaryLight + '40',
     borderWidth: 1.5,
-    borderColor: EcoColors.primary,
   },
   statusButtonText: {
     fontSize: 14,
     fontWeight: '700',
-    color: EcoColors.primary,
   },
   assignButton: {
     flex: 1,
-    backgroundColor: EcoColors.primary,
-    shadowColor: EcoColors.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -845,12 +818,10 @@ const styles = StyleSheet.create({
   assignButtonText: {
     fontSize: 14,
     fontWeight: '700',
-    color: EcoColors.white,
+    color: '#FFFFFF',
   },
   deleteButton: {
     flex: 1,
-    backgroundColor: EcoColors.error,
-    shadowColor: EcoColors.error,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -859,7 +830,7 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     fontSize: 14,
     fontWeight: '700',
-    color: EcoColors.white,
+    color: '#FFFFFF',
   },
   modalOverlay: {
     flex: 1,
@@ -867,7 +838,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: EcoColors.white,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: '70%',
@@ -878,30 +848,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: EcoColors.gray200,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: EcoColors.gray800,
   },
   modalScroll: {
     padding: 16,
   },
   noVolunteersText: {
     textAlign: 'center',
-    color: EcoColors.gray600,
     padding: 20,
   },
   volunteerItem: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: EcoColors.white,
     borderRadius: 16,
     marginBottom: 10,
     borderWidth: 1.5,
-    borderColor: EcoColors.gray200,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -912,17 +877,15 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: EcoColors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 14,
     borderWidth: 2,
-    borderColor: EcoColors.primaryLight,
   },
   volunteerAvatarText: {
     fontSize: 20,
     fontWeight: '700',
-    color: EcoColors.white,
+    color: '#FFFFFF',
   },
   volunteerInfo: {
     flex: 1,
@@ -930,12 +893,10 @@ const styles = StyleSheet.create({
   volunteerName: {
     fontSize: 16,
     fontWeight: '600',
-    color: EcoColors.gray800,
     marginBottom: 2,
   },
   volunteerEmail: {
     fontSize: 14,
-    color: EcoColors.gray600,
   },
   volunteerPoints: {
     flexDirection: 'row',
@@ -945,7 +906,6 @@ const styles = StyleSheet.create({
   volunteerPointsText: {
     fontSize: 14,
     fontWeight: '600',
-    color: EcoColors.accent,
   },
   statusOptions: {
     padding: 16,
@@ -954,15 +914,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: EcoColors.gray50,
     borderRadius: 12,
     marginBottom: 8,
     gap: 12,
   },
   statusOptionActive: {
-    backgroundColor: EcoColors.primaryLight,
     borderWidth: 2,
-    borderColor: EcoColors.primary,
   },
   statusOptionIcon: {
     fontSize: 24,
@@ -971,6 +928,5 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontWeight: '600',
-    color: EcoColors.gray800,
   },
 });

@@ -70,7 +70,7 @@ export default function ProfileScreen() {
 
   const stats = [
     { label: 'Total Points', value: totalPoints, icon: 'star', color: '#FFB800' },
-    { label: 'Reports Made', value: userReports.length, icon: 'document-text', color: EcoColors.primary },
+    { label: 'Reports Made', value: userReports.length, icon: 'document-text', color: colors.primary },
     { label: 'Lakes Helped', value: cleanedReports, icon: 'water', color: '#4FC3F7' },
     { label: 'Badges Earned', value: earnedBadges.length, icon: 'trophy', color: '#9C27B0' },
   ];
@@ -99,7 +99,7 @@ export default function ProfileScreen() {
           <RefreshControl 
             refreshing={refreshing} 
             onRefresh={onRefresh} 
-            tintColor={EcoColors.primary} 
+            tintColor={colors.primary} 
           />
         }
       >
@@ -191,7 +191,7 @@ export default function ProfileScreen() {
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Badges</Text>
             <TouchableOpacity onPress={() => router.push('/badges')}>
-              <Text style={styles.seeAllText}>See All</Text>
+              <Text style={[styles.seeAllText, { color: colors.primary }]}>See All</Text>
             </TouchableOpacity>
           </View>
           <ScrollView
@@ -216,7 +216,7 @@ export default function ProfileScreen() {
             {userReports.slice(0, 3).length > 0 ? (
               userReports.slice(0, 3).map((report, index) => (
                 <View key={report.id} style={[styles.activityItem, { borderBottomColor: colors.border }]}>
-                  <View style={styles.activityDot} />
+                  <View style={[styles.activityDot, { backgroundColor: colors.primary }]} />
                   <View style={styles.activityContent}>
                     <Text style={[styles.activityText, { color: colors.text }]}>
                       Reported {report.category} pollution
@@ -229,7 +229,7 @@ export default function ProfileScreen() {
                   <View
                     style={[
                       styles.activityStatus,
-                      { backgroundColor: report.status === 'cleaned' ? EcoColors.success : EcoColors.info },
+                      { backgroundColor: report.status === 'cleaned' ? colors.success : colors.info },
                     ]}
                   >
                     <Text style={styles.activityStatusText}>{report.status}</Text>
@@ -268,9 +268,9 @@ export default function ProfileScreen() {
         </View>
 
         {/* Sign Out */}
-        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-          <Ionicons name="log-out-outline" size={20} color={EcoColors.error} />
-          <Text style={styles.signOutText}>Sign Out</Text>
+        <TouchableOpacity style={[styles.signOutButton, { backgroundColor: colors.error + '10' }]} onPress={handleSignOut}>
+          <Ionicons name="log-out-outline" size={20} color={colors.error} />
+          <Text style={[styles.signOutText, { color: colors.error }]}>Sign Out</Text>
         </TouchableOpacity>
 
         <View style={styles.bottomSpacing} />
@@ -282,7 +282,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: EcoColors.gray50,
+    backgroundColor: undefined, // Set dynamically
   },
   headerGradient: {
     paddingBottom: 40,
@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
   },
   levelHint: {
     fontSize: 12,
-    color: EcoColors.gray500,
+    color: undefined, // Set dynamically
     marginTop: 6,
     textAlign: 'right',
   },
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 12,
-    color: EcoColors.gray500,
+    color: undefined, // Set dynamically
     marginTop: 2,
     textAlign: 'center',
   },
@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
   },
   seeAllText: {
     fontSize: 14,
-    color: EcoColors.primary,
+    color: undefined, // Set dynamically
     fontWeight: '600',
   },
   badgesContainer: {
@@ -462,13 +462,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: EcoColors.gray100,
+    borderBottomColor: undefined, // Set dynamically
   },
   activityDot: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: EcoColors.primary,
+    backgroundColor: undefined, // Set dynamically
     marginRight: 12,
   },
   activityContent: {
@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
   },
   activityDate: {
     fontSize: 12,
-    color: EcoColors.gray400,
+    color: undefined, // Set dynamically
     marginTop: 2,
   },
   activityStatus: {
@@ -505,7 +505,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    color: EcoColors.gray400,
+    color: undefined, // Set dynamically
   },
   menuCard: {
     marginHorizontal: 20,
@@ -519,13 +519,13 @@ const styles = StyleSheet.create({
   },
   menuItemBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: EcoColors.gray100,
+    borderBottomColor: undefined, // Set dynamically
   },
   menuIconContainer: {
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: EcoColors.primaryLight + '20',
+    backgroundColor: undefined, // Set dynamically
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -543,14 +543,14 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginTop: 8,
     paddingVertical: 16,
-    backgroundColor: EcoColors.error + '10',
+    backgroundColor: undefined, // Set dynamically
     borderRadius: 12,
     gap: 8,
   },
   signOutText: {
     fontSize: 15,
     fontWeight: '600',
-    color: EcoColors.error,
+    color: undefined, // Set dynamically
   },
   bottomSpacing: {
     height: 100,

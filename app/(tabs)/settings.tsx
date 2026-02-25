@@ -182,7 +182,7 @@ export default function SettingsScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { backgroundColor: colors.headerBackground, borderBottomColor: colors.border }]}>
           <TouchableOpacity 
             style={styles.backButton}
             onPress={() => router.back()}
@@ -208,7 +208,7 @@ export default function SettingsScreen() {
               />
               {uploadingAvatar && (
                 <View style={styles.uploadingOverlay}>
-                  <ActivityIndicator size="large" color={EcoColors.primary} />
+                  <ActivityIndicator size="large" color={colors.primary} />
                 </View>
               )}
               <TouchableOpacity
@@ -216,7 +216,7 @@ export default function SettingsScreen() {
                 onPress={handlePickAvatar}
                 disabled={uploadingAvatar}
               >
-                <Ionicons name="camera" size={20} color={EcoColors.primary} />
+                <Ionicons name="camera" size={20} color={colors.primary} />
                 <Text style={styles.avatarButtonText}>Change Avatar</Text>
               </TouchableOpacity>
             </View>
@@ -224,36 +224,36 @@ export default function SettingsScreen() {
 
           {/* Profile Information */}
           <Card variant="elevated" style={styles.card}>
-            <Text style={styles.cardTitle}>Profile Information</Text>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>Profile Information</Text>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Name</Text>
+              <Text style={[styles.inputLabel, { color: colors.text }]}>Name</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text, borderColor: colors.border }]}
                 value={name}
                 onChangeText={setName}
                 placeholder="Enter your name"
-                placeholderTextColor={EcoColors.gray400}
+                placeholderTextColor={colors.textTertiary}
               />
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Email</Text>
+              <Text style={[styles.inputLabel, { color: colors.text }]}>Email</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { backgroundColor: colors.inputBackground, color: colors.text, borderColor: colors.border }]}
                 value={email}
                 onChangeText={setEmail}
                 placeholder="Enter your email"
-                placeholderTextColor={EcoColors.gray400}
+                placeholderTextColor={colors.textTertiary}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Role</Text>
+              <Text style={[styles.inputLabel, { color: colors.text }]}>Role</Text>
               <View style={styles.roleChip}>
-                <Ionicons name="shield-checkmark" size={16} color={EcoColors.primary} />
+                <Ionicons name="shield-checkmark" size={16} color={colors.primary} />
                 <Text style={styles.roleChipText}>{authUser?.role || 'Reporter'}</Text>
               </View>
             </View>
@@ -269,8 +269,8 @@ export default function SettingsScreen() {
 
           {/* Appearance */}
           <Card variant="elevated" style={styles.card}>
-            <Text style={styles.cardTitle}>Appearance</Text>
-            <Text style={styles.cardSubtitle}>Choose your preferred theme</Text>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>Appearance</Text>
+            <Text style={[styles.cardSubtitle, { color: colors.textSecondary }]}>Choose your preferred theme</Text>
 
             {[
               { value: 'light' as ThemeOption, label: 'Light', icon: 'sunny', description: 'Always use light theme' },
@@ -282,29 +282,31 @@ export default function SettingsScreen() {
                 style={[
                   styles.themeOption,
                   index > 0 && styles.themeOptionBorder,
+                  index > 0 && { borderTopColor: colors.border },
                   theme === option.value && styles.themeOptionActive,
                 ]}
                 onPress={() => setTheme(option.value)}
               >
                 <View style={[
                   styles.themeIconContainer,
+                  { backgroundColor: colors.surface },
                   theme === option.value && styles.themeIconContainerActive,
                 ]}>
                   <Ionicons 
                     name={option.icon as any} 
                     size={20} 
-                    color={theme === option.value ? EcoColors.white : EcoColors.gray600} 
+                    color={theme === option.value ? EcoColors.white : colors.textSecondary} 
                   />
                 </View>
                 <View style={styles.themeContent}>
-                  <Text style={styles.themeLabel}>{option.label}</Text>
-                  <Text style={styles.themeDescription}>{option.description}</Text>
+                  <Text style={[styles.themeLabel, { color: colors.text }]}>{option.label}</Text>
+                  <Text style={[styles.themeDescription, { color: colors.textSecondary }]}>{option.description}</Text>
                 </View>
                 {theme === option.value && (
                   <Ionicons 
                     name="checkmark-circle" 
                     size={24} 
-                    color={EcoColors.primary} 
+                    color={colors.primary} 
                   />
                 )}
               </TouchableOpacity>
@@ -313,88 +315,88 @@ export default function SettingsScreen() {
 
           {/* Help & Support */}
           <Card variant="elevated" style={styles.card}>
-            <Text style={styles.cardTitle}>Help & Support</Text>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>Help & Support</Text>
 
             <TouchableOpacity 
               style={styles.menuItem}
               onPress={() => Alert.alert('FAQs', 'Frequently Asked Questions:\n\n1. How do I report pollution?\n- Go to the Report tab and submit details with photos\n\n2. How do I earn points?\n- Report pollution, participate in cleanups, and complete challenges\n\n3. How do I redeem rewards?\n- Visit the Redeem tab once you have enough points')}
             >
               <View style={styles.menuItemLeft}>
-                <Ionicons name="help-circle-outline" size={22} color={EcoColors.primary} />
-                <Text style={styles.menuItemText}>FAQs</Text>
+                <Ionicons name="help-circle-outline" size={22} color={colors.primary} />
+                <Text style={[styles.menuItemText, { color: colors.text }]}>FAQs</Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color={EcoColors.gray400} />
+              <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
             </TouchableOpacity>
 
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
             <TouchableOpacity 
               style={styles.menuItem}
               onPress={() => Alert.alert('Contact Support', 'Email: support@ecolake.com\nPhone: +91 1800-123-4567\n\nWe typically respond within 24 hours.')}
             >
               <View style={styles.menuItemLeft}>
-                <Ionicons name="mail-outline" size={22} color={EcoColors.primary} />
-                <Text style={styles.menuItemText}>Contact Support</Text>
+                <Ionicons name="mail-outline" size={22} color={colors.primary} />
+                <Text style={[styles.menuItemText, { color: colors.text }]}>Contact Support</Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color={EcoColors.gray400} />
+              <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
             </TouchableOpacity>
 
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
             <TouchableOpacity 
               style={styles.menuItem}
               onPress={() => Alert.alert('Report a Bug', 'Please send bug reports to:\nbug-reports@ecolake.com\n\nInclude:\n- Device model\n- What you were doing\n- Screenshots if possible')}
             >
               <View style={styles.menuItemLeft}>
-                <Ionicons name="bug-outline" size={22} color={EcoColors.primary} />
-                <Text style={styles.menuItemText}>Report a Bug</Text>
+                <Ionicons name="bug-outline" size={22} color={colors.primary} />
+                <Text style={[styles.menuItemText, { color: colors.text }]}>Report a Bug</Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color={EcoColors.gray400} />
+              <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
             </TouchableOpacity>
 
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
             <TouchableOpacity 
               style={styles.menuItem}
               onPress={() => Alert.alert('Terms & Privacy', 'Terms of Service:\n- Use the app responsibly\n- Provide accurate information\n- Respect other users\n\nPrivacy Policy:\n- We protect your data\n- No data sold to third parties\n- Location used only for reports\n\nFull details: www.ecolake.com/terms')}
             >
               <View style={styles.menuItemLeft}>
-                <Ionicons name="document-text-outline" size={22} color={EcoColors.primary} />
-                <Text style={styles.menuItemText}>Terms & Privacy</Text>
+                <Ionicons name="document-text-outline" size={22} color={colors.primary} />
+                <Text style={[styles.menuItemText, { color: colors.text }]}>Terms & Privacy</Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color={EcoColors.gray400} />
+              <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
             </TouchableOpacity>
 
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
             <TouchableOpacity 
               style={styles.menuItem}
               onPress={() => Alert.alert('About EcoLake', 'Version 1.0.0\n\nA community-driven app to clean and protect our lakes.\n\n© 2025 EcoLake\nMade with 💚 for the environment')}
             >
               <View style={styles.menuItemLeft}>
-                <Ionicons name="information-circle-outline" size={22} color={EcoColors.primary} />
-                <Text style={styles.menuItemText}>About App</Text>
+                <Ionicons name="information-circle-outline" size={22} color={colors.primary} />
+                <Text style={[styles.menuItemText, { color: colors.text }]}>About App</Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color={EcoColors.gray400} />
+              <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
             </TouchableOpacity>
           </Card>
 
           {/* Account Settings */}
           <Card variant="elevated" style={styles.card}>
-            <Text style={styles.cardTitle}>Account Settings</Text>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>Account Settings</Text>
 
             <TouchableOpacity 
               style={styles.menuItem}
               onPress={handleChangePassword}
             >
               <View style={styles.menuItemLeft}>
-                <Ionicons name="lock-closed-outline" size={22} color={EcoColors.gray600} />
-                <Text style={styles.menuItemText}>Change Password</Text>
+                <Ionicons name="lock-closed-outline" size={22} color={colors.textSecondary} />
+                <Text style={[styles.menuItemText, { color: colors.text }]}>Change Password</Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color={EcoColors.gray400} />
+              <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
             </TouchableOpacity>
 
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
             <TouchableOpacity 
               style={styles.menuItem}
@@ -404,7 +406,7 @@ export default function SettingsScreen() {
                 <Ionicons name="trash-outline" size={22} color={EcoColors.error} />
                 <Text style={[styles.menuItemText, { color: EcoColors.error }]}>Delete Account</Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color={EcoColors.gray400} />
+              <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
             </TouchableOpacity>
           </Card>
 
@@ -429,7 +431,6 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: EcoColors.gray50,
   },
   flex: {
     flex: 1,
@@ -440,9 +441,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: EcoColors.white,
     borderBottomWidth: 1,
-    borderBottomColor: EcoColors.gray200,
   },
   backButton: {
     padding: 4,
@@ -450,7 +449,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: EcoColors.gray800,
   },
   placeholder: {
     width: 32,
@@ -499,12 +497,10 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: EcoColors.gray800,
     marginBottom: 4,
   },
   cardSubtitle: {
     fontSize: 14,
-    color: EcoColors.gray600,
     marginBottom: 16,
   },
   themeOption: {
@@ -514,7 +510,6 @@ const styles = StyleSheet.create({
   },
   themeOptionBorder: {
     borderTopWidth: 1,
-    borderTopColor: EcoColors.gray200,
     marginTop: 12,
     paddingTop: 12,
   },
@@ -528,7 +523,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: EcoColors.gray100,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -542,12 +536,10 @@ const styles = StyleSheet.create({
   themeLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: EcoColors.gray800,
     marginBottom: 2,
   },
   themeDescription: {
     fontSize: 13,
-    color: EcoColors.gray600,
   },
   inputContainer: {
     marginBottom: 16,
@@ -555,18 +547,14 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: EcoColors.gray700,
     marginBottom: 8,
   },
   input: {
-    backgroundColor: EcoColors.gray50,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: EcoColors.gray800,
     borderWidth: 1,
-    borderColor: EcoColors.gray200,
   },
   roleChip: {
     flexDirection: 'row',
@@ -600,12 +588,10 @@ const styles = StyleSheet.create({
   },
   menuItemText: {
     fontSize: 16,
-    color: EcoColors.gray700,
     fontWeight: '500',
   },
   divider: {
     height: 1,
-    backgroundColor: EcoColors.gray200,
   },
   signOutButton: {
     marginTop: 8,

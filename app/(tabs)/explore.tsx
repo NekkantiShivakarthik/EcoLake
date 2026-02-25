@@ -15,7 +15,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CardSkeleton, EditReportModal, EmptyState } from '@/components/ui';
 import { EnhancedReportCard } from '@/components/ui/enhanced-report-card';
-import { EcoColors } from '@/constants/colors';
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/contexts/theme-context';
 import { useDeleteReport, useReports, useUpdateReport } from '@/hooks/use-supabase';
@@ -115,7 +114,7 @@ export default function ExploreScreen() {
                 <Ionicons
                   name={viewMode === 'list' ? 'grid' : 'list'}
                   size={20}
-                  color={EcoColors.white}
+                  color="#FFFFFF"
                 />
               </TouchableOpacity>
               <TouchableOpacity
@@ -125,7 +124,7 @@ export default function ExploreScreen() {
                 <Ionicons
                   name={actualTheme === 'dark' ? 'sunny' : 'moon'}
                   size={20}
-                  color={EcoColors.white}
+                  color="#FFFFFF"
                 />
               </TouchableOpacity>
             </View>
@@ -133,18 +132,18 @@ export default function ExploreScreen() {
         </View>
 
         {/* Search Bar */}
-        <View style={styles.searchContainer}>
-          <Ionicons name="search" size={20} color={EcoColors.gray400} style={styles.searchIcon} />
+        <View style={[styles.searchContainer, { backgroundColor: colors.cardBackground }]}>
+          <Ionicons name="search" size={20} color={colors.textTertiary} style={styles.searchIcon} />
           <TextInput
-            style={styles.searchInput}
+            style={[styles.searchInput, { color: colors.text }]}
             placeholder="Search lakes, categories..."
-            placeholderTextColor={EcoColors.gray400}
+            placeholderTextColor={colors.textTertiary}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
           {searchQuery !== '' && (
             <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearButton}>
-              <Ionicons name="close-circle" size={20} color={EcoColors.gray400} />
+              <Ionicons name="close-circle" size={20} color={colors.textTertiary} />
             </TouchableOpacity>
           )}
         </View>
@@ -162,7 +161,8 @@ export default function ExploreScreen() {
             <TouchableOpacity
               style={[
                 styles.filterChip,
-                activeFilter === item.key && styles.filterChipActive,
+                { backgroundColor: colors.cardBackground, borderColor: colors.surface },
+                activeFilter === item.key && [styles.filterChipActive, { backgroundColor: colors.primary, borderColor: colors.primary }],
               ]}
               onPress={() => setActiveFilter(item.key)}
             >
@@ -170,7 +170,8 @@ export default function ExploreScreen() {
               <Text
                 style={[
                   styles.filterChipText,
-                  activeFilter === item.key && styles.filterChipTextActive,
+                  { color: colors.textSecondary },
+                  activeFilter === item.key && [styles.filterChipTextActive, { color: colors.cardBackground }],
                 ]}
               >
                 {item.label}
@@ -182,13 +183,13 @@ export default function ExploreScreen() {
 
       {/* Results Count */}
       <View style={styles.resultsHeader}>
-        <Text style={styles.resultsText}>
+        <Text style={[styles.resultsText, { color: colors.textSecondary }]}>
           {filteredReports.length} {filteredReports.length === 1 ? 'report found' : 'reports found'}
         </Text>
         {activeFilter !== 'all' && (
-          <TouchableOpacity onPress={() => setActiveFilter('all')} style={styles.clearFilter}>
-            <Text style={styles.clearFilterText}>Clear filter</Text>
-            <Ionicons name="close" size={14} color={EcoColors.primary} />
+          <TouchableOpacity onPress={() => setActiveFilter('all')} style={[styles.clearFilter, { backgroundColor: colors.primary + '15' }]}>
+            <Text style={[styles.clearFilterText, { color: colors.primary }]}>Clear filter</Text>
+            <Ionicons name="close" size={14} color={colors.primary} />
           </TouchableOpacity>
         )}
       </View>
@@ -226,8 +227,8 @@ export default function ExploreScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor={EcoColors.primary}
-              colors={[EcoColors.primary]}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
             />
           }
           ListEmptyComponent={() => (
@@ -265,7 +266,6 @@ export default function ExploreScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: EcoColors.gray50,
   },
   headerGradient: {
     paddingBottom: 20,
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: '800',
-    color: EcoColors.white,
+    color: '#FFFFFF',
     letterSpacing: -0.5,
   },
   subtitle: {
@@ -336,7 +336,6 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: EcoColors.white,
     marginHorizontal: 20,
     borderRadius: 18,
     paddingHorizontal: 16,
@@ -353,7 +352,6 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 52,
     fontSize: 15,
-    color: EcoColors.gray800,
   },
   clearButton: {
     padding: 4,
@@ -371,9 +369,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 24,
-    backgroundColor: EcoColors.white,
     borderWidth: 2,
-    borderColor: EcoColors.gray100,
     marginRight: 10,
     gap: 6,
     shadowColor: '#000',
@@ -382,21 +378,15 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 3,
   },
-  filterChipActive: {
-    backgroundColor: EcoColors.primary,
-    borderColor: EcoColors.primary,
-  },
+  filterChipActive: {},
   filterEmoji: {
     fontSize: 14,
   },
   filterChipText: {
     fontSize: 13,
     fontWeight: '600',
-    color: EcoColors.gray600,
   },
-  filterChipTextActive: {
-    color: EcoColors.white,
-  },
+  filterChipTextActive: {},
   resultsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -406,21 +396,18 @@ const styles = StyleSheet.create({
   },
   resultsText: {
     fontSize: 14,
-    color: EcoColors.gray500,
     fontWeight: '600',
   },
   clearFilter: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: EcoColors.primary + '15',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
   },
   clearFilterText: {
     fontSize: 12,
-    color: EcoColors.primary,
     fontWeight: '600',
   },
   loadingContainer: {

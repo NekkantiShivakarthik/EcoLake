@@ -119,9 +119,9 @@ export default function HomeScreen() {
                   name={user?.name || 'User'}
                   size="md"
                   showBadge
-                  badgeColor={EcoColors.success}
+                  badgeColor={colors.success}
                 />
-                <View style={styles.levelBadge}>
+                <View style={[styles.levelBadge, { borderColor: colors.background }]}>
                   <Text style={styles.levelText}>{currentLevel}</Text>
                 </View>
               </View>
@@ -152,7 +152,7 @@ export default function HomeScreen() {
               <View style={styles.heroButtons}>
                 <Link href="/(tabs)/report" asChild>
                   <TouchableOpacity style={styles.heroButton}>
-                    <Ionicons name="camera" size={18} color={EcoColors.primary} />
+                    <Ionicons name="camera" size={18} color={colors.primary} />
                     <Text style={styles.heroButtonText}>Report Now</Text>
                   </TouchableOpacity>
                 </Link>
@@ -295,7 +295,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: EcoColors.gray50,
   },
   scrollView: {
     flex: 1,
@@ -315,13 +314,11 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontSize: 14,
-    color: EcoColors.gray500,
     fontWeight: '500',
   },
   userName: {
     fontSize: 24,
     fontWeight: '800',
-    color: EcoColors.gray900,
     letterSpacing: -0.5,
   },
   pointsBadge: {
@@ -347,7 +344,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: EcoColors.gray100,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -365,7 +361,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: EcoColors.white,
   },
   levelText: {
     fontSize: 10,
@@ -376,7 +371,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: EcoColors.gray200,
   },
   heroBanner: {
     marginHorizontal: 20,
@@ -494,7 +488,6 @@ const styles = StyleSheet.create({
   quickActionText: {
     fontSize: 12,
     fontWeight: '600',
-    color: EcoColors.gray600,
   },
   section: {
     marginBottom: 16,
@@ -509,7 +502,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: EcoColors.gray800,
     paddingHorizontal: 20,
     marginBottom: 12,
   },
@@ -520,7 +512,6 @@ const styles = StyleSheet.create({
   },
   seeAllText: {
     fontSize: 14,
-    color: EcoColors.primary,
     fontWeight: '600',
   },
   statsRow: {
@@ -539,7 +530,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 14,
-    color: EcoColors.gray500,
   },
   emptyContainer: {
     padding: 40,
@@ -552,12 +542,10 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: EcoColors.gray700,
     marginBottom: 4,
   },
   emptyText: {
     fontSize: 14,
-    color: EcoColors.gray500,
     textAlign: 'center',
   },
   skeletonContainer: {

@@ -15,7 +15,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ActivityItem } from '@/components/ui/activity-item';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
-import { EcoColors } from '@/constants/colors';
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/contexts/theme-context';
 import { useReports, useUserProfile } from '@/hooks/use-supabase';
@@ -141,7 +140,7 @@ export default function ActivityHistoryScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       {/* Gradient Header */}
       <LinearGradient
-        colors={[EcoColors.primary, EcoColors.primaryDark]}
+        colors={[colors.primary, colors.primaryDark]}
         style={styles.headerGradient}
       >
         <View style={styles.header}>
@@ -149,7 +148,7 @@ export default function ActivityHistoryScreen() {
             style={styles.backButton}
             onPress={() => router.back()}
           >
-            <Ionicons name="arrow-back" size={24} color={EcoColors.white} />
+            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
           <Text style={styles.title}>Activity History</Text>
           <View style={styles.placeholder} />
@@ -186,19 +185,19 @@ export default function ActivityHistoryScreen() {
             key={btn.key}
             style={[
               styles.filterButton,
-              filter === btn.key && styles.filterButtonActive,
+              { backgroundColor: filter === btn.key ? colors.primary : colors.border },
             ]}
             onPress={() => setFilter(btn.key as typeof filter)}
           >
             <Ionicons
               name={btn.icon as any}
               size={16}
-              color={filter === btn.key ? EcoColors.white : EcoColors.gray600}
+              color={filter === btn.key ? '#FFFFFF' : colors.textSecondary}
             />
             <Text
               style={[
                 styles.filterButtonText,
-                filter === btn.key && styles.filterButtonTextActive,
+                { color: filter === btn.key ? '#FFFFFF' : colors.textSecondary },
               ]}
             >
               {btn.label}
@@ -226,7 +225,7 @@ export default function ActivityHistoryScreen() {
                   points={activity.points}
                   status={activity.status}
                 />
-                {index < filteredActivities.length - 1 && <View style={styles.divider} />}
+                {index < filteredActivities.length - 1 && <View style={[styles.divider, { backgroundColor: colors.divider }]} />}
               </View>
             ))}
           </Card>
@@ -239,7 +238,7 @@ export default function ActivityHistoryScreen() {
               <TouchableOpacity
                 style={{
                   marginTop: 16,
-                  backgroundColor: EcoColors.primary,
+                  backgroundColor: colors.primary,
                   paddingHorizontal: 20,
                   paddingVertical: 10,
                   borderRadius: 20,
@@ -247,7 +246,7 @@ export default function ActivityHistoryScreen() {
                 }}
                 onPress={() => router.push('/(tabs)/report')}
               >
-                <Text style={{ color: EcoColors.white, fontWeight: '600' }}>Report Now</Text>
+                <Text style={{ color: '#FFFFFF', fontWeight: '600' }}>Report Now</Text>
               </TouchableOpacity>
             }
           />
@@ -260,7 +259,6 @@ export default function ActivityHistoryScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: EcoColors.gray50,
   },
   headerGradient: {
     paddingBottom: 20,
@@ -279,7 +277,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: EcoColors.white,
+    color: '#FFFFFF',
   },
   placeholder: {
     width: 40,
@@ -298,18 +296,18 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: '700',
-    color: EcoColors.white,
+    color: '#FFFFFF',
   },
   statLabel: {
     fontSize: 12,
-    color: EcoColors.white,
+    color: '#FFFFFF',
     opacity: 0.8,
     marginTop: 4,
   },
   statDivider: {
     width: 1,
     height: 40,
-    backgroundColor: EcoColors.white,
+    backgroundColor: '#FFFFFF',
     opacity: 0.3,
   },
   filterScroll: {
@@ -326,20 +324,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: EcoColors.gray200,
     gap: 6,
     marginRight: 8,
-  },
-  filterButtonActive: {
-    backgroundColor: EcoColors.primary,
   },
   filterButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: EcoColors.gray600,
-  },
-  filterButtonTextActive: {
-    color: EcoColors.white,
   },
   timelineCard: {
     margin: 16,
@@ -347,7 +337,6 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: EcoColors.gray200,
     marginLeft: 68,
   },
 });

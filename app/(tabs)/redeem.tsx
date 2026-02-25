@@ -13,7 +13,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { RewardCard } from '@/components/ui/reward-card';
-import { EcoColors } from '@/constants/colors';
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/contexts/theme-context';
 import { useRedeemReward, useRedemptions, useRewards, useUserProfile } from '@/hooks/use-supabase';
@@ -108,11 +107,11 @@ export default function RedeemScreen() {
   );
 
   const renderRedemptionItem = ({ item }: { item: any }) => (
-    <View style={styles.redemptionCard}>
+    <View style={[styles.redemptionCard, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
       <View style={styles.redemptionHeader}>
         <View style={styles.redemptionInfo}>
-          <Text style={styles.redemptionName}>{item.reward?.name || 'Deleted Reward'}</Text>
-          <Text style={styles.redemptionDate}>
+          <Text style={[styles.redemptionName, { color: colors.text }]}>{item.reward?.name || 'Deleted Reward'}</Text>
+          <Text style={[styles.redemptionDate, { color: colors.textSecondary }]}>
             {new Date(item.redeemed_at).toLocaleDateString()}
           </Text>
         </View>
@@ -129,13 +128,13 @@ export default function RedeemScreen() {
 
       <View style={styles.redemptionDetails}>
         <View style={styles.redemptionRow}>
-          <Text style={styles.redemptionLabel}>Points Spent:</Text>
-          <Text style={styles.redemptionValue}>-{item.points_spent} pts</Text>
+          <Text style={[styles.redemptionLabel, { color: colors.textSecondary }]}>Points Spent:</Text>
+          <Text style={[styles.redemptionValue, { color: colors.text }]}>-{item.points_spent} pts</Text>
         </View>
         {item.redemption_code && (
           <View style={styles.redemptionRow}>
-            <Text style={styles.redemptionLabel}>Code:</Text>
-            <Text style={styles.redemptionCode}>{item.redemption_code}</Text>
+            <Text style={[styles.redemptionLabel, { color: colors.textSecondary }]}>Code:</Text>
+            <Text style={[styles.redemptionCode, { color: colors.primary }]}>{item.redemption_code}</Text>
           </View>
         )}
       </View>
@@ -176,18 +175,18 @@ export default function RedeemScreen() {
       {activeTab === 'available' ? (
         <>
           {/* Search Bar */}
-          <View style={styles.searchContainer}>
+          <View style={[styles.searchContainer, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
             <Text style={styles.searchIcon}>🔍</Text>
             <TextInput
-              style={styles.searchInput}
+              style={[styles.searchInput, { color: colors.text }]}
               placeholder="Search rewards..."
-              placeholderTextColor={EcoColors.gray400}
+              placeholderTextColor={colors.textTertiary}
               value={searchQuery}
               onChangeText={setSearchQuery}
             />
             {searchQuery !== '' && (
               <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <Text style={styles.clearIcon}>✕</Text>
+                <Text style={[styles.clearIcon, { color: colors.textTertiary }]}>✕</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -203,7 +202,8 @@ export default function RedeemScreen() {
                 key={category.key}
                 style={[
                   styles.categoryChip,
-                  activeCategory === category.key && styles.categoryChipActive,
+                  { backgroundColor: colors.cardBackground, borderColor: colors.border },
+                  activeCategory === category.key && [styles.categoryChipActive, { backgroundColor: colors.primary, borderColor: colors.primary }],
                 ]}
                 onPress={() => setActiveCategory(category.key)}
               >
@@ -211,6 +211,7 @@ export default function RedeemScreen() {
                 <Text
                   style={[
                     styles.categoryText,
+                    { color: colors.textSecondary },
                     activeCategory === category.key && styles.categoryTextActive,
                   ]}
                 >
@@ -229,14 +230,14 @@ export default function RedeemScreen() {
             ListEmptyComponent={
               <View style={styles.emptyState}>
                 <Text style={styles.emptyIcon}>🎁</Text>
-                <Text style={styles.emptyText}>No rewards available</Text>
+                <Text style={[styles.emptyText, { color: colors.text }]}>No rewards available</Text>
               </View>
             }
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                tintColor={EcoColors.primary}
+                tintColor={colors.primary}
               />
             }
           />
@@ -250,8 +251,8 @@ export default function RedeemScreen() {
           ListEmptyComponent={
             <View style={styles.emptyState}>
               <Text style={styles.emptyIcon}>📦</Text>
-              <Text style={styles.emptyText}>No redemptions yet</Text>
-              <Text style={styles.emptySubtext}>
+              <Text style={[styles.emptyText, { color: colors.text }]}>No redemptions yet</Text>
+              <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>
                 Start redeeming rewards to see your history here
               </Text>
             </View>
@@ -260,7 +261,7 @@ export default function RedeemScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor={EcoColors.primary}
+              tintColor={colors.primary}
             />
           }
         />
@@ -272,7 +273,6 @@ export default function RedeemScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: EcoColors.gray50,
   },
   header: {
     flexDirection: 'row',
@@ -284,12 +284,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: EcoColors.gray900,
   },
   pointsBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: EcoColors.primaryLight + '20',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 24,
@@ -301,7 +299,6 @@ const styles = StyleSheet.create({
   pointsText: {
     fontSize: 16,
     fontWeight: '700',
-    color: EcoColors.primary,
   },
   tabs: {
     flexDirection: 'row',
@@ -316,28 +313,21 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: 'transparent',
   },
-  tabActive: {
-    borderBottomColor: EcoColors.primary,
-  },
+  tabActive: {},
   tabText: {
     fontSize: 15,
     fontWeight: '600',
-    color: EcoColors.gray500,
   },
-  tabTextActive: {
-    color: EcoColors.primary,
-  },
+  tabTextActive: {},
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: EcoColors.white,
     marginHorizontal: 20,
     marginBottom: 16,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: EcoColors.gray200,
   },
   searchIcon: {
     fontSize: 18,
@@ -346,11 +336,9 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 15,
-    color: EcoColors.gray800,
   },
   clearIcon: {
     fontSize: 16,
-    color: EcoColors.gray400,
     paddingHorizontal: 8,
   },
   categoriesContainer: {
@@ -364,26 +352,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 24,
-    backgroundColor: EcoColors.white,
     borderWidth: 1,
-    borderColor: EcoColors.gray200,
     marginRight: 10,
     gap: 6,
   },
-  categoryChipActive: {
-    backgroundColor: EcoColors.primary,
-    borderColor: EcoColors.primary,
-  },
+  categoryChipActive: {},
   categoryIcon: {
     fontSize: 16,
   },
   categoryText: {
     fontSize: 14,
     fontWeight: '500',
-    color: EcoColors.gray700,
   },
   categoryTextActive: {
-    color: EcoColors.white,
+    color: '#FFFFFF',
   },
   rewardsList: {
     paddingHorizontal: 20,
@@ -395,12 +377,10 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   redemptionCard: {
-    backgroundColor: EcoColors.white,
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: EcoColors.gray200,
   },
   redemptionHeader: {
     flexDirection: 'row',
@@ -414,29 +394,27 @@ const styles = StyleSheet.create({
   redemptionName: {
     fontSize: 16,
     fontWeight: '600',
-    color: EcoColors.gray900,
     marginBottom: 4,
   },
   redemptionDate: {
     fontSize: 13,
-    color: EcoColors.gray500,
   },
   statusBadge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
-    backgroundColor: EcoColors.warning + '20',
+    backgroundColor: '#F59E0B20',
   },
   statusBadgeDelivered: {
-    backgroundColor: EcoColors.success + '20',
+    backgroundColor: '#10B98120',
   },
   statusBadgeCancelled: {
-    backgroundColor: EcoColors.error + '20',
+    backgroundColor: '#EF444420',
   },
   statusText: {
     fontSize: 12,
     fontWeight: '600',
-    color: EcoColors.warning,
+    color: '#F59E0B',
     textTransform: 'capitalize',
   },
   redemptionDetails: {
@@ -449,17 +427,14 @@ const styles = StyleSheet.create({
   },
   redemptionLabel: {
     fontSize: 14,
-    color: EcoColors.gray600,
   },
   redemptionValue: {
     fontSize: 14,
     fontWeight: '600',
-    color: EcoColors.gray900,
   },
   redemptionCode: {
     fontSize: 13,
     fontWeight: '600',
-    color: EcoColors.primary,
     fontFamily: 'monospace',
   },
   emptyState: {
@@ -474,12 +449,10 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '600',
-    color: EcoColors.gray700,
     marginBottom: 8,
   },
   emptySubtext: {
     fontSize: 14,
-    color: EcoColors.gray500,
     textAlign: 'center',
   },
 });

@@ -1,4 +1,5 @@
 import { EcoColors } from '@/constants/colors';
+import { useTheme } from '@/contexts/theme-context';
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, TouchableOpacityProps } from 'react-native';
 
@@ -20,10 +21,13 @@ export function Button({
   disabled,
   ...props
 }: ButtonProps) {
+  const { colors } = useTheme();
+
   const buttonStyles = [
     styles.button,
     styles[variant],
     styles[`size_${size}`],
+    variant === 'outline' && { borderColor: colors.primary },
     disabled && styles.disabled,
     style,
   ];
@@ -32,6 +36,7 @@ export function Button({
     styles.text,
     styles[`text_${variant}`],
     styles[`text_${size}`],
+    (variant === 'outline' || variant === 'ghost') && { color: colors.primary },
   ];
 
   return (
@@ -70,7 +75,6 @@ const styles = StyleSheet.create({
   outline: {
     backgroundColor: 'transparent',
     borderWidth: 2,
-    borderColor: EcoColors.primary,
   },
   ghost: {
     backgroundColor: 'transparent',
@@ -99,12 +103,8 @@ const styles = StyleSheet.create({
   text_secondary: {
     color: EcoColors.white,
   },
-  text_outline: {
-    color: EcoColors.primary,
-  },
-  text_ghost: {
-    color: EcoColors.primary,
-  },
+  text_outline: {},
+  text_ghost: {},
   text_sm: {
     fontSize: 14,
   },

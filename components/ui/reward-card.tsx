@@ -3,7 +3,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { EcoColors } from '@/constants/colors';
 import { BrandColors, CategoryGradients, getRewardLogo } from '@/constants/reward-logos';
 import { useTheme } from '@/contexts/theme-context';
 
@@ -23,7 +22,7 @@ interface RewardCardProps {
 }
 
 export function RewardCard({ reward, userPoints, onRedeem }: RewardCardProps) {
-  const { colors } = useTheme();
+  const { colors, actualTheme } = useTheme();
   const canAfford = userPoints >= reward.points_required;
   const inStock = reward.stock_available > 0;
   const isAvailable = canAfford && inStock;
@@ -90,6 +89,15 @@ export function RewardCard({ reward, userPoints, onRedeem }: RewardCardProps) {
                 )}
               </View>
               
+              {/* Gift Card Value */}
+              {reward.value && (
+                <View style={styles.giftCardValueBadge}>
+                  <Text style={styles.giftCardValueText}>
+                    ₹{Math.round(reward.value).toLocaleString('en-IN')}
+                  </Text>
+                </View>
+              )}
+
               {/* Gift Card Label */}
               <View style={styles.giftCardLabel}>
                 <Text style={[styles.giftCardLabelText, { color: brandColor.text }]}>
@@ -100,13 +108,13 @@ export function RewardCard({ reward, userPoints, onRedeem }: RewardCardProps) {
               {/* Card Pattern/Decoration */}
               <View style={styles.cardPattern}>
                 {[...Array(6)].map((_, i) => (
-                  <View key={i} style={[styles.patternDot, { opacity: 0.1 }]} />
+                  <View key={i} style={[styles.patternDot, { opacity: 0.15 }]} />
                 ))}
               </View>
             </View>
             
             {/* Category Badge */}
-            <View style={styles.categoryBadge}>
+            <View style={[styles.categoryBadge, { backgroundColor: actualTheme === 'dark' ? colors.surface : '#FFFFFF' }]}>
               <Text style={styles.categoryIcon}>{getCategoryIcon(reward.category)}</Text>
             </View>
           </LinearGradient>
@@ -128,7 +136,7 @@ export function RewardCard({ reward, userPoints, onRedeem }: RewardCardProps) {
               transition={200}
             />
           )}
-          <View style={styles.categoryBadge}>
+          <View style={[styles.categoryBadge, { backgroundColor: actualTheme === 'dark' ? colors.surface : '#FFFFFF' }]}>
             <Text style={styles.categoryIcon}>{getCategoryIcon(reward.category)}</Text>
           </View>
         </LinearGradient>
@@ -146,30 +154,25 @@ export function RewardCard({ reward, userPoints, onRedeem }: RewardCardProps) {
         )}
 
         {/* Value */}
-        {reward.value && (
+        {reward.value && !isGiftCard && (
           <View style={styles.valueContainer}>
             <View style={styles.valueRow}>
               <Text style={[styles.valueLabel, { color: colors.textSecondary }]}>Worth:</Text>
-              <Text style={styles.valueAmount}>₹{Math.round(reward.value).toLocaleString('en-IN')}</Text>
+              <Text style={[styles.valueAmount, { color: colors.success }]}>₹{Math.round(reward.value).toLocaleString('en-IN')}</Text>
             </View>
-            {reward.category === 'gift_card' && (
-              <Text style={styles.savingsText}>
-                Save ₹{Math.round(reward.value - (reward.points_required * 0.1)).toLocaleString('en-IN')} 💰
-              </Text>
-            )}
           </View>
         )}
 
         {/* Points Required */}
         <View style={styles.pointsRow}>
-          <View style={styles.pointsBadge}>
+          <View style={[styles.pointsBadge, { backgroundColor: colors.primary + '20' }]}>
             <Text style={styles.pointsIcon}>⭐</Text>
-            <Text style={styles.pointsText}>{reward.points_required.toLocaleString()} pts</Text>
+            <Text style={[styles.pointsText, { color: colors.primary }]}>{reward.points_required.toLocaleString()} pts</Text>
           </View>
 
           {/* Stock */}
           {reward.stock_available < 20 && (
-            <Text style={styles.stockText}>
+            <Text style={[styles.stockText, { color: colors.warning }]}>
               {reward.stock_available > 0
                 ? `${reward.stock_available} left`
                 : 'Out of stock'}
@@ -181,22 +184,24 @@ export function RewardCard({ reward, userPoints, onRedeem }: RewardCardProps) {
         <TouchableOpacity
           style={[
             styles.redeemButton,
-            !isAvailable && styles.redeemButtonDisabled,
+            { backgroundColor: colors.primary },
+            !isAvailable && [styles.redeemButtonDisabled, { backgroundColor: actualTheme === 'dark' ? colors.surface : colors.border }],
           ]}
           onPress={() => onRedeem(reward.id)}
           disabled={!isAvailable}
+          activeOpacity={0.8}
         >
           <Text
             style={[
               styles.redeemButtonText,
-              !isAvailable && styles.redeemButtonTextDisabled,
+              !isAvailable && [styles.redeemButtonTextDisabled, { color: colors.textTertiary }],
             ]}
           >
             {!inStock
               ? 'Out of Stock'
               : !canAfford
-              ? `Need ${reward.points_required - userPoints} more pts`
-              : 'Redeem'}
+              ? `Need ${(reward.points_required - userPoints).toLocaleString()} more pts`
+              : '✨ Redeem Now'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -206,15 +211,18 @@ export function RewardCard({ reward, userPoints, onRedeem }: RewardCardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: EcoColors.white,
-    borderRadius: 16,
+    borderRadius: 20,
     overflow: 'hidden',
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: EcoColors.gray200,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
   },
   cardDisabled: {
-    opacity: 0.6,
+    opacity: 0.55,
   },
   imageContainer: {
     width: '100%',
@@ -224,8 +232,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   image: {
-    width: '70%',
-    height: '70%',
+    width: '60%',
+    height: '60%',
   },
   emojiLogo: {
     fontSize: 80,
@@ -234,17 +242,16 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 12,
     right: 12,
-    backgroundColor: EcoColors.white,
     borderRadius: 20,
-    width: 36,
-    height: 36,
+    width: 38,
+    height: 38,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
   },
   categoryIcon: {
     fontSize: 18,
@@ -255,12 +262,10 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 18,
     fontWeight: '700',
-    color: EcoColors.gray900,
     marginBottom: 6,
   },
   description: {
     fontSize: 14,
-    color: EcoColors.gray600,
     lineHeight: 20,
     marginBottom: 12,
   },
@@ -274,71 +279,63 @@ const styles = StyleSheet.create({
   },
   valueLabel: {
     fontSize: 14,
-    color: EcoColors.gray500,
     marginRight: 6,
   },
   valueAmount: {
     fontSize: 18,
     fontWeight: '700',
-    color: EcoColors.success,
-  },
-  savingsText: {
-    fontSize: 12,
-    color: EcoColors.accent,
-    fontWeight: '600',
-    fontStyle: 'italic',
   },
   pointsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 14,
   },
   pointsBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: EcoColors.primaryLight + '20',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
     borderRadius: 20,
-    gap: 4,
+    gap: 5,
   },
   pointsIcon: {
     fontSize: 14,
   },
   pointsText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: EcoColors.primary,
+    fontWeight: '700',
   },
   stockText: {
     fontSize: 12,
-    color: EcoColors.warning,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   redeemButton: {
-    backgroundColor: EcoColors.primary,
     paddingVertical: 14,
-    borderRadius: 10,
+    borderRadius: 14,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   redeemButtonDisabled: {
-    backgroundColor: EcoColors.gray300,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   redeemButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: EcoColors.white,
+    color: '#FFFFFF',
     letterSpacing: 0.5,
   },
   redeemButtonTextDisabled: {
-    color: EcoColors.gray600,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   giftCardContainer: {
     width: '100%',
     height: 200,
-    borderRadius: 12,
     overflow: 'hidden',
   },
   giftCardGradient: {
@@ -354,12 +351,12 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     padding: 12,
-    borderRadius: 12,
+    borderRadius: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
-    elevation: 5,
+    elevation: 6,
   },
   giftCardLogo: {
     width: 80,
@@ -367,6 +364,21 @@ const styles = StyleSheet.create({
   },
   giftCardEmoji: {
     fontSize: 40,
+  },
+  giftCardValueBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 50,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  giftCardValueText: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
   },
   giftCardLabel: {
     alignSelf: 'flex-end',

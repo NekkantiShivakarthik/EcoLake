@@ -191,13 +191,13 @@ export default function ReportScreen() {
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.headerRow}>
-              <Text style={styles.title}>Report Pollution</Text>
+              <Text style={[styles.title, { color: colors.text }]}>Report Pollution</Text>
               <View style={styles.pointsBadge}>
                 <Text style={styles.pointsIcon}>⭐</Text>
                 <Text style={styles.pointsText}>{points}</Text>
               </View>
             </View>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
               Help keep our lakes clean by reporting pollution
             </Text>
             <Text style={styles.pointsHint}>
@@ -207,7 +207,7 @@ export default function ReportScreen() {
 
           {/* Location Section */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>📍 Location</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>📍 Location</Text>
             <Card variant="outlined" style={styles.locationCard}>
               {location ? (
                 <View style={styles.locationInfo}>
@@ -215,18 +215,18 @@ export default function ReportScreen() {
                     <Text style={styles.locationIcon}>✅</Text>
                     <View style={styles.locationText}>
                       <Text style={styles.locationTitle}>Location Captured</Text>
-                      <Text style={styles.locationCoords}>
+                      <Text style={[styles.locationCoords, { color: colors.textSecondary }]}>
                         {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
                       </Text>
                       {address && (
-                        <Text style={styles.locationAddress} numberOfLines={2}>
+                        <Text style={[styles.locationAddress, { color: colors.textSecondary }]} numberOfLines={2}>
                           {address}
                         </Text>
                       )}
                     </View>
                   </View>
-                  <TouchableOpacity style={styles.locationClearBtn} onPress={clearLocation}>
-                    <Text style={styles.locationClearText}>Clear</Text>
+                  <TouchableOpacity style={[styles.locationClearBtn, { backgroundColor: colors.surface }]} onPress={clearLocation}>
+                    <Text style={[styles.locationClearText, { color: colors.textSecondary }]}>Clear</Text>
                   </TouchableOpacity>
                 </View>
               ) : (
@@ -236,13 +236,13 @@ export default function ReportScreen() {
                   disabled={locationLoading}
                 >
                   {locationLoading ? (
-                    <ActivityIndicator size="small" color={EcoColors.primary} />
+                    <ActivityIndicator size="small" color={colors.primary} />
                   ) : (
                     <>
                       <Text style={styles.locationButtonIcon}>🎯</Text>
                       <View>
-                        <Text style={styles.locationButtonText}>Get Current Location</Text>
-                        <Text style={styles.locationButtonSubtext}>
+                        <Text style={[styles.locationButtonText, { color: colors.text }]}>Get Current Location</Text>
+                        <Text style={[styles.locationButtonSubtext, { color: colors.textSecondary }]}>
                           Add GPS coordinates to your report
                         </Text>
                       </View>
@@ -256,7 +256,7 @@ export default function ReportScreen() {
           {/* Lake Selection */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Select Lake *</Text>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Select Lake *</Text>
               {hasLocation && hasNearbyLakes && (
                 <Text style={styles.nearbyLabel}>📍 {filteredLakes.length} of {nearbyLakes.length}</Text>
               )}
@@ -268,9 +268,9 @@ export default function ReportScreen() {
                 <Card variant="outlined" style={styles.searchCard}>
                   <Text style={styles.searchIcon}>🔍</Text>
                   <TextInput
-                    style={styles.searchInput}
+                    style={[styles.searchInput, { color: colors.text }]}
                     placeholder="Search for a lake..."
-                    placeholderTextColor={EcoColors.gray400}
+                    placeholderTextColor={colors.textTertiary}
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                     autoCapitalize="none"
@@ -281,7 +281,7 @@ export default function ReportScreen() {
                       style={styles.clearSearchBtn}
                       onPress={() => setSearchQuery('')}
                     >
-                      <Text style={styles.clearSearchText}>✕</Text>
+                      <Text style={[styles.clearSearchText, { color: colors.textTertiary }]}>✕</Text>
                     </TouchableOpacity>
                   )}
                 </Card>
@@ -291,8 +291,8 @@ export default function ReportScreen() {
             {!hasLocation ? (
               <Card variant="outlined" style={styles.noLakesCard}>
                 <Text style={styles.noLakesIcon}>📍</Text>
-                <Text style={styles.noLakesTitle}>Location Required</Text>
-                <Text style={styles.noLakesText}>
+                <Text style={[styles.noLakesTitle, { color: colors.text }]}>Location Required</Text>
+                <Text style={[styles.noLakesText, { color: colors.textSecondary }]}>
                   Please enable location to find nearby lakes
                 </Text>
                 <TouchableOpacity
@@ -304,22 +304,22 @@ export default function ReportScreen() {
               </Card>
             ) : lakesLoading ? (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator size="small" color={EcoColors.primary} />
-                <Text style={styles.loadingText}>Searching for nearby lakes...</Text>
+                <ActivityIndicator size="small" color={colors.primary} />
+                <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Searching for nearby lakes...</Text>
               </View>
             ) : !hasNearbyLakes ? (
               <Card variant="outlined" style={styles.noLakesCard}>
                 <Text style={styles.noLakesIcon}>🔍</Text>
-                <Text style={styles.noLakesTitle}>No lakes found nearby</Text>
-                <Text style={styles.noLakesText}>
+                <Text style={[styles.noLakesTitle, { color: colors.text }]}>No lakes found nearby</Text>
+                <Text style={[styles.noLakesText, { color: colors.textSecondary }]}>
                   No lakes found within 25km of your location. Try moving closer to a lake or water body.
                 </Text>
               </Card>
             ) : !hasFilteredLakes ? (
               <Card variant="outlined" style={styles.noLakesCard}>
                 <Text style={styles.noLakesIcon}>🔍</Text>
-                <Text style={styles.noLakesTitle}>No matches found</Text>
-                <Text style={styles.noLakesText}>{`No lakes match "${searchQuery}". Try a different search term.`}</Text>
+                <Text style={[styles.noLakesTitle, { color: colors.text }]}>No matches found</Text>
+                <Text style={[styles.noLakesText, { color: colors.textSecondary }]}>{`No lakes match "${searchQuery}". Try a different search term.`}</Text>
                 <TouchableOpacity
                   style={styles.showAllButton}
                   onPress={() => setSearchQuery('')}
@@ -338,6 +338,7 @@ export default function ReportScreen() {
                     key={lake.id}
                     style={[
                       styles.lakeChip,
+                      { backgroundColor: colors.cardBackground, borderColor: colors.border },
                       selectedLake?.id === lake.id && styles.lakeChipActive,
                     ]}
                     onPress={() => setSelectedLake(lake)}
@@ -347,6 +348,7 @@ export default function ReportScreen() {
                       <Text
                         style={[
                           styles.lakeChipText,
+                          { color: colors.text },
                           selectedLake?.id === lake.id && styles.lakeChipTextActive,
                         ]}
                         numberOfLines={2}
@@ -373,13 +375,14 @@ export default function ReportScreen() {
 
           {/* Category Selection */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Pollution Category *</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Pollution Category *</Text>
             <View style={styles.categoriesGrid}>
               {categories.map((category) => (
                 <TouchableOpacity
                   key={category.key}
                   style={[
                     styles.categoryCard,
+                    { backgroundColor: colors.cardBackground, borderColor: colors.border },
                     selectedCategory === category.key && styles.categoryCardActive,
                   ]}
                   onPress={() => setSelectedCategory(category.key)}
@@ -388,6 +391,7 @@ export default function ReportScreen() {
                   <Text
                     style={[
                       styles.categoryLabel,
+                      { color: colors.textSecondary },
                       selectedCategory === category.key && styles.categoryLabelActive,
                     ]}
                   >
@@ -400,7 +404,7 @@ export default function ReportScreen() {
 
           {/* Severity Selection */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Severity Level *</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Severity Level *</Text>
             <Card variant="outlined" style={styles.severityCard}>
               <View style={styles.severityRow}>
                 {[1, 2, 3, 4, 5].map((level) => (
@@ -408,6 +412,7 @@ export default function ReportScreen() {
                     key={level}
                     style={[
                       styles.severityButton,
+                      { backgroundColor: colors.surface },
                       severity === level && styles.severityButtonActive,
                       severity === level && { backgroundColor: getSeverityColor(level) },
                     ]}
@@ -416,6 +421,7 @@ export default function ReportScreen() {
                     <Text
                       style={[
                         styles.severityText,
+                        { color: colors.textSecondary },
                         severity === level && styles.severityTextActive,
                       ]}
                     >
@@ -425,20 +431,20 @@ export default function ReportScreen() {
                 ))}
               </View>
               <View style={styles.severityLabels}>
-                <Text style={styles.severityLabel}>Minor</Text>
-                <Text style={styles.severityLabel}>Critical</Text>
+                <Text style={[styles.severityLabel, { color: colors.textTertiary }]}>Minor</Text>
+                <Text style={[styles.severityLabel, { color: colors.textTertiary }]}>Critical</Text>
               </View>
             </Card>
           </View>
 
           {/* Description */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Description *</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Description *</Text>
             <Card variant="outlined" style={styles.descriptionCard}>
               <TextInput
-                style={styles.descriptionInput}
+                style={[styles.descriptionInput, { color: colors.text }]}
                 placeholder="Describe the pollution you observed..."
-                placeholderTextColor={EcoColors.gray400}
+                placeholderTextColor={colors.textTertiary}
                 value={description}
                 onChangeText={setDescription}
                 multiline
@@ -451,8 +457,8 @@ export default function ReportScreen() {
           {/* Photo Upload */}
           <View style={styles.section}>
             <View style={styles.photoHeader}>
-              <Text style={styles.sectionTitle}>📸 Photos</Text>
-              <Text style={styles.photoCount}>{images.length}/5</Text>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>📸 Photos</Text>
+              <Text style={[styles.photoCount, { color: colors.textSecondary }]}>{images.length}/5</Text>
             </View>
 
             {/* Photo Grid */}
@@ -466,7 +472,7 @@ export default function ReportScreen() {
                   <View key={index} style={styles.photoItem}>
                     <Image
                       source={{ uri: image.uri }}
-                      style={styles.photoThumbnail}
+                      style={[styles.photoThumbnail, { backgroundColor: colors.surface }]}
                       contentFit="cover"
                     />
                     <TouchableOpacity
@@ -483,19 +489,19 @@ export default function ReportScreen() {
             {/* Add Photo Button */}
             {images.length < 5 && (
               <TouchableOpacity
-                style={styles.photoUpload}
+                style={[styles.photoUpload, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}
                 onPress={showImagePickerOptions}
                 disabled={imageLoading}
               >
                 {imageLoading ? (
-                  <ActivityIndicator size="small" color={EcoColors.primary} />
+                  <ActivityIndicator size="small" color={colors.primary} />
                 ) : (
                   <>
                     <Text style={styles.photoIcon}>📷</Text>
-                    <Text style={styles.photoText}>
+                    <Text style={[styles.photoText, { color: colors.textSecondary }]}>
                       {images.length > 0 ? 'Add More Photos' : 'Tap to Add Photos'}
                     </Text>
-                    <Text style={styles.photoSubtext}>
+                    <Text style={[styles.photoSubtext, { color: colors.textTertiary }]}>
                       Camera or gallery • Max 5 photos
                     </Text>
                   </>
@@ -506,10 +512,10 @@ export default function ReportScreen() {
             {/* Upload Progress */}
             {uploading && (
               <View style={styles.uploadProgress}>
-                <View style={styles.progressBar}>
+                <View style={[styles.progressBar, { backgroundColor: colors.border }]}>
                   <View style={[styles.progressFill, { width: `${progress}%` }]} />
                 </View>
-                <Text style={styles.progressText}>Uploading photos... {Math.round(progress)}%</Text>
+                <Text style={[styles.progressText, { color: colors.textSecondary }]}>Uploading photos... {Math.round(progress)}%</Text>
               </View>
             )}
           </View>
@@ -524,7 +530,7 @@ export default function ReportScreen() {
               size="lg"
               style={styles.submitButton}
             />
-            <Text style={styles.submitHint}>
+            <Text style={[styles.submitHint, { color: colors.textSecondary }]}>
               Your report will be reviewed and assigned to volunteers.
             </Text>
           </View>
@@ -550,7 +556,6 @@ function getSeverityColor(level: number): string {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: EcoColors.gray50,
   },
   flex: {
     flex: 1,
@@ -571,7 +576,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: EcoColors.gray900,
   },
   pointsBadge: {
     flexDirection: 'row',
@@ -592,7 +596,6 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: EcoColors.gray500,
     marginTop: 4,
   },
   pointsHint: {
@@ -607,7 +610,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: EcoColors.gray700,
     marginBottom: 12,
     paddingHorizontal: 20,
   },
@@ -629,11 +631,9 @@ const styles = StyleSheet.create({
   locationButtonText: {
     fontSize: 15,
     fontWeight: '600',
-    color: EcoColors.gray800,
   },
   locationButtonSubtext: {
     fontSize: 12,
-    color: EcoColors.gray500,
     marginTop: 2,
   },
   locationInfo: {
@@ -657,13 +657,11 @@ const styles = StyleSheet.create({
   },
   locationCoords: {
     fontSize: 12,
-    color: EcoColors.gray600,
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
     marginTop: 4,
   },
   locationAddress: {
     fontSize: 13,
-    color: EcoColors.gray500,
     marginTop: 4,
   },
   locationClearBtn: {
@@ -671,13 +669,11 @@ const styles = StyleSheet.create({
     marginTop: 8,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: EcoColors.gray100,
     borderRadius: 6,
   },
   locationClearText: {
     fontSize: 12,
     fontWeight: '500',
-    color: EcoColors.gray600,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -708,7 +704,6 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 15,
-    color: EcoColors.gray800,
     paddingVertical: 4,
   },
   clearSearchBtn: {
@@ -716,7 +711,6 @@ const styles = StyleSheet.create({
   },
   clearSearchText: {
     fontSize: 16,
-    color: EcoColors.gray400,
   },
   loadingContainer: {
     flexDirection: 'row',
@@ -727,7 +721,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 14,
-    color: EcoColors.gray500,
   },
   noLakesCard: {
     marginHorizontal: 20,
@@ -741,12 +734,10 @@ const styles = StyleSheet.create({
   noLakesTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: EcoColors.gray700,
     marginBottom: 8,
   },
   noLakesText: {
     fontSize: 14,
-    color: EcoColors.gray500,
     textAlign: 'center',
     marginBottom: 16,
     lineHeight: 20,
@@ -767,13 +758,11 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: EcoColors.gray100,
     borderRadius: 16,
   },
   showNearbyButtonText: {
     fontSize: 13,
     fontWeight: '500',
-    color: EcoColors.gray600,
   },
   lakesContainer: {
     paddingHorizontal: 20,
@@ -785,9 +774,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderRadius: 16,
-    backgroundColor: EcoColors.white,
     borderWidth: 1.5,
-    borderColor: EcoColors.gray200,
     marginRight: 10,
     gap: 10,
     minWidth: 140,
@@ -806,7 +793,6 @@ const styles = StyleSheet.create({
   lakeChipText: {
     fontSize: 15,
     fontWeight: '600',
-    color: EcoColors.gray800,
     lineHeight: 20,
   },
   lakeChipTextActive: {
@@ -831,10 +817,8 @@ const styles = StyleSheet.create({
     width: '30%',
     alignItems: 'center',
     padding: 16,
-    backgroundColor: EcoColors.white,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: EcoColors.gray200,
   },
   categoryCardActive: {
     backgroundColor: EcoColors.primaryLight + '20',
@@ -847,7 +831,6 @@ const styles = StyleSheet.create({
   categoryLabel: {
     fontSize: 12,
     fontWeight: '500',
-    color: EcoColors.gray600,
     textAlign: 'center',
   },
   categoryLabelActive: {
@@ -867,7 +850,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     marginHorizontal: 4,
     borderRadius: 8,
-    backgroundColor: EcoColors.gray100,
   },
   severityButtonActive: {
     backgroundColor: EcoColors.primary,
@@ -875,7 +857,6 @@ const styles = StyleSheet.create({
   severityText: {
     fontSize: 16,
     fontWeight: '600',
-    color: EcoColors.gray600,
   },
   severityTextActive: {
     color: EcoColors.white,
@@ -886,7 +867,6 @@ const styles = StyleSheet.create({
   },
   severityLabel: {
     fontSize: 12,
-    color: EcoColors.gray400,
   },
   descriptionCard: {
     marginHorizontal: 20,
@@ -894,7 +874,6 @@ const styles = StyleSheet.create({
   },
   descriptionInput: {
     fontSize: 15,
-    color: EcoColors.gray800,
     padding: 16,
     minHeight: 120,
   },
@@ -902,10 +881,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     alignItems: 'center',
     padding: 24,
-    backgroundColor: EcoColors.white,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: EcoColors.gray200,
     borderStyle: 'dashed',
   },
   photoHeader: {
@@ -917,7 +894,6 @@ const styles = StyleSheet.create({
   photoCount: {
     fontSize: 14,
     fontWeight: '600',
-    color: EcoColors.gray500,
   },
   photoGrid: {
     paddingHorizontal: 20,
@@ -932,7 +908,6 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 12,
-    backgroundColor: EcoColors.gray200,
   },
   photoRemoveBtn: {
     position: 'absolute',
@@ -957,11 +932,9 @@ const styles = StyleSheet.create({
   photoText: {
     fontSize: 14,
     fontWeight: '500',
-    color: EcoColors.gray600,
   },
   photoSubtext: {
     fontSize: 12,
-    color: EcoColors.gray400,
     marginTop: 4,
   },
   submitSection: {
@@ -973,7 +946,6 @@ const styles = StyleSheet.create({
   },
   submitHint: {
     fontSize: 12,
-    color: EcoColors.gray500,
     textAlign: 'center',
     marginTop: 12,
     lineHeight: 18,
@@ -984,7 +956,6 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: 4,
-    backgroundColor: EcoColors.gray200,
     borderRadius: 2,
     overflow: 'hidden',
   },
@@ -995,7 +966,6 @@ const styles = StyleSheet.create({
   },
   progressText: {
     fontSize: 12,
-    color: EcoColors.gray500,
     marginTop: 4,
     textAlign: 'center',
   },
