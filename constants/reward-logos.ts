@@ -69,7 +69,7 @@ export function getRewardLogo(rewardName: string, category: string): string {
 }
 
 // Category gradient colors for cards
-export const CategoryGradients: Record<string, string[]> = {
+export const CategoryGradients: Record<string, [string, string, ...string[]]> = {
   gift_card: ['#FF6B6B', '#FF8E53'],
   subscription: ['#4ECDC4', '#44A08D'],
   eco_action: ['#56AB2F', '#A8E063'],
