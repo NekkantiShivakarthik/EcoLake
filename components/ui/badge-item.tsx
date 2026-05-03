@@ -26,11 +26,11 @@ export function BadgeItem({ badge, earned = true, awardedAt }: BadgeItemProps) {
       <Text style={[styles.name, { color: colors.text }, !earned && { color: colors.textTertiary }]} numberOfLines={1}>
         {badge.name}
       </Text>
-      {earned && awardedAt && (
+      {earned && !!awardedAt ? (
         <Text style={[styles.date, { color: colors.textSecondary }]}>
           {new Date(awardedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
         </Text>
-      )}
+      ) : null}
     </View>
   );
 }

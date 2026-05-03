@@ -30,8 +30,21 @@ interface Report {
   status: string;
   lat: number;
   lng: number;
+  city?: string | null;
   lake_name: string | null;
+  ai_analysis_status?: 'pending' | 'processing' | 'completed' | 'failed' | null;
+  ai_waste_type?: string | null;
+  ai_severity_level?: number | null;
+  ai_estimated_cleanup_time_minutes?: number | null;
+  ai_recommended_tools?: string[] | null;
+  ai_confidence?: number | null;
+  ai_model?: string | null;
+  ai_summary?: string | null;
+  ai_error?: string | null;
+  ai_processed_at?: string | null;
   assigned_cleaner_id: string | null;
+  assigned_at?: string | null;
+  updated_at?: string | null;
   created_at: string;
   user: {
     id: string;
@@ -376,11 +389,13 @@ export default function ManageScreen() {
                   <Text style={[styles.reportDescription, { color: colors.text }]} numberOfLines={2}>
                     {report.ai_summary || report.description}
                   </Text>
-                  {report.ai_analysis_status === 'completed' && report.ai_confidence && (
+                  {report.ai_analysis_status === 'completed' &&
+                  report.ai_confidence !== null &&
+                  report.ai_confidence !== undefined ? (
                     <Text style={[styles.aiConfidence, { color: colors.textSecondary }]}>
                       ✓ AI Confidence: {(report.ai_confidence * 100).toFixed(0)}% | Cleanup: {report.ai_estimated_cleanup_time_minutes || '60'} min
                     </Text>
-                  )}
+                  ) : null}
                   {report.user && (
                     <View style={styles.reportUserRow}>
                       <Ionicons name="person-circle-outline" size={14} color={colors.textSecondary} />

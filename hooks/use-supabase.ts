@@ -879,21 +879,39 @@ export function useSubmitReport() {
 
     if (typeof value === 'object') {
       const maybeError = value as {
+        code?: unknown;
         message?: unknown;
         details?: unknown;
         hint?: unknown;
       };
 
-      if (typeof maybeError.message === 'string' && maybeError.message.trim()) {
-        return maybeError.message;
+      const code = typeof maybeError.code === 'string' ? maybeError.code : '';
+      const message = typeof maybeError.message === 'string' ? maybeError.message.trim() : '';
+      const details = typeof maybeError.details === 'string' ? maybeError.details.trim() : '';
+      const hint = typeof maybeError.hint === 'string' ? maybeError.hint.trim() : '';
+
+      const normalized = message.toLowerCase();
+      if (
+        code === '42883' &&
+        normalized.includes('calculate_priority_score')
+      ) {
+        return 'Database migration missing: calculate_priority_score(). Run supabase/migrations/20260504_fix_priority_score_functions.sql in Supabase SQL Editor.';
       }
 
-      if (typeof maybeError.details === 'string' && maybeError.details.trim()) {
-        return maybeError.details;
+      if (message) {
+        const extras = [details, hint].filter((item) => item && item !== message);
+        if (extras.length > 0) {
+          return `${message}. ${extras.join(' ')}`;
+        }
+        return message;
       }
 
-      if (typeof maybeError.hint === 'string' && maybeError.hint.trim()) {
-        return maybeError.hint;
+      if (details) {
+        return details;
+      }
+
+      if (hint) {
+        return hint;
       }
     }
 
@@ -909,6 +927,27 @@ export function useSubmitReport() {
         (normalized.includes('does not exist') ||
           normalized.includes('schema cache') ||
           normalized.includes('could not find')))
+    );
+  };
+
+  const extractMissingColumn = (value: { message?: string | null; details?: string | null; hint?: string | null }) => {
+    const source = `${value.message || ''} ${value.details || ''} ${value.hint || ''}`;
+
+    const quotedMatch = source.match(/['"]([a-zA-Z0-9_]+)['"]\s+column/i);
+    if (quotedMatch?.[1]) return quotedMatch[1];
+
+    const classicMatch = source.match(/column\s+["']?([a-zA-Z0-9_]+)["']?\s+does not exist/i);
+    if (classicMatch?.[1]) return classicMatch[1];
+
+    return null;
+  };
+
+  const isStatusValueError = (value: { message?: string | null; details?: string | null; hint?: string | null }) => {
+    const normalized = `${value.message || ''} ${value.details || ''} ${value.hint || ''}`.toLowerCase();
+    return (
+      normalized.includes('status') &&
+      (normalized.includes('invalid input value for enum') ||
+        normalized.includes('violates check constraint'))
     );
   };
 
@@ -933,12 +972,21 @@ export function useSubmitReport() {
         throw new Error('You must be logged in to submit a report');
       }
 
+      // Align to active auth session to satisfy RLS user checks
+      const { data: sessionData } = await supabase.auth.getSession();
+      const sessionUserId = sessionData.session?.user?.id || null;
+      const effectiveUserId = sessionUserId || data.user_id;
+
+      if (!effectiveUserId) {
+        throw new Error('Session expired. Please sign in again.');
+      }
+
       // Determine AI analysis status based on photos
       const hasPhotos = (data.photo_urls && data.photo_urls.length > 0);
       const aiAnalysisStatus = hasPhotos ? 'pending' : 'completed';
 
       const baseInsert = {
-        user_id: data.user_id,
+        user_id: effectiveUserId,
         lake_id: data.lake_id || null,
         lake_name: data.lake_name || 'Unknown Lake',
         category: data.category,
@@ -957,25 +1005,56 @@ export function useSubmitReport() {
         ai_analysis_status: aiAnalysisStatus,
       } as any;
 
-      let { data: insertedReport, error: insertError } = await supabase
-        .from('reports')
-        .insert(insertPayload)
-        .select()
-        .single();
+      const statusFallbacks = ['submitted', 'verified', 'pending'];
+      const attemptedPayload = { ...insertPayload } as any;
+      let insertedReport: any = null;
+      let lastInsertError: any = null;
+      let statusFallbackIndex = 0;
 
-      if (insertError) {
-        if (isSchemaMismatchError(insertError as any)) {
-          const retry = await supabase
-            .from('reports')
-            .insert(baseInsert)
-            .select()
-            .single();
+      for (let attempt = 0; attempt < 6; attempt += 1) {
+        const { data: tryData, error: tryError } = await supabase
+          .from('reports')
+          .insert(attemptedPayload)
+          .select()
+          .single();
 
-          if (retry.error) throw retry.error;
-          insertedReport = retry.data as any;
-        } else {
-          throw insertError;
+        if (!tryError) {
+          insertedReport = tryData as any;
+          lastInsertError = null;
+          break;
         }
+
+        lastInsertError = tryError;
+
+        if (isSchemaMismatchError(tryError as any)) {
+          const missingColumn = extractMissingColumn(tryError as any);
+          if (missingColumn && Object.prototype.hasOwnProperty.call(attemptedPayload, missingColumn)) {
+            delete attemptedPayload[missingColumn];
+            continue;
+          }
+
+          // Backward compatibility for older schema variants
+          if (Object.prototype.hasOwnProperty.call(attemptedPayload, 'ai_analysis_status')) {
+            delete attemptedPayload.ai_analysis_status;
+            continue;
+          }
+          if (Object.prototype.hasOwnProperty.call(attemptedPayload, 'city')) {
+            delete attemptedPayload.city;
+            continue;
+          }
+        }
+
+        if (isStatusValueError(tryError as any) && statusFallbackIndex < statusFallbacks.length - 1) {
+          statusFallbackIndex += 1;
+          attemptedPayload.status = statusFallbacks[statusFallbackIndex];
+          continue;
+        }
+
+        break;
+      }
+
+      if (lastInsertError || !insertedReport) {
+        throw lastInsertError || new Error('Failed to create report');
       }
 
       const reportId = (insertedReport as any)?.id;
@@ -987,7 +1066,7 @@ export function useSubmitReport() {
       const { data: currentPoints } = await supabase
         .from('points_log')
         .select('balance_snapshot')
-        .eq('user_id', data.user_id)
+        .eq('user_id', effectiveUserId)
         .order('created_at', { ascending: false })
         .limit(1);
       
@@ -996,7 +1075,7 @@ export function useSubmitReport() {
 
       // Insert points log entry
       const { error: pointsError } = await (supabase.from('points_log') as any).insert({
-        user_id: data.user_id,
+        user_id: effectiveUserId,
         change: pointsEarned,
         reason: `Report submitted: ${data.lake_name || 'Unknown Lake'}`,
         balance_snapshot: newBalance,
@@ -1007,7 +1086,7 @@ export function useSubmitReport() {
       }
 
       // Check for new badges
-      const newBadges = await checkAndAwardBadges(data.user_id);
+      const newBadges = await checkAndAwardBadges(effectiveUserId);
 
       // Trigger AI analysis asynchronously if photos exist
       if (hasPhotos && reportId) {
@@ -1030,6 +1109,7 @@ export function useSubmitReport() {
 
       return { success: true, pointsEarned, newBadges, reportId };
     } catch (err) {
+      console.error('submitReport failed:', err);
       const message = getErrorMessage(err);
       setError(message);
       return { success: false, error: message, newBadges: [], reportId: undefined };

@@ -161,11 +161,14 @@ export function EditReportModal({
                     <Text style={[styles.locationName, { color: colors.text }]}>
                       {report?.lake_name || 'Unknown Lake'}
                     </Text>
-                    {report?.lat && report?.lng && (
+                    {report?.lat !== null &&
+                    report?.lat !== undefined &&
+                    report?.lng !== null &&
+                    report?.lng !== undefined ? (
                       <Text style={[styles.locationCoords, { color: colors.textSecondary }]}>
                         {report.lat.toFixed(4)}, {report.lng.toFixed(4)}
                       </Text>
-                    )}
+                    ) : null}
                   </View>
                 </View>
               </Card>
