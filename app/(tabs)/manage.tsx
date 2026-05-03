@@ -358,15 +358,29 @@ export default function ManageScreen() {
                   </View>
                   <View style={styles.reportMetaRow}>
                     <View style={[styles.categoryBadge, { backgroundColor: colors.primary + '20' }]}>
-                      <Text style={[styles.reportCategory, { color: colors.primary }]}>{report.category}</Text>
+                      <Text style={[styles.reportCategory, { color: colors.primary }]}>
+                        {report.ai_waste_type ? `🤖 ${report.ai_waste_type.replace(/_/g, ' ')}` : report.category}
+                      </Text>
                     </View>
                     <View style={[styles.severityBadge, { backgroundColor: colors.accent + '20' }]}>
-                      <Text style={styles.severityText}>{'⭐'.repeat(report.severity)}</Text>
+                      <Text style={styles.severityText}>
+                        {'⭐'.repeat(report.ai_severity_level || report.severity)}
+                      </Text>
                     </View>
+                    {report.ai_analysis_status === 'processing' && (
+                      <View style={[styles.analyzingBadge, { backgroundColor: '#FFA500' + '20' }]}>
+                        <Text style={[styles.analyzingText, { color: '#FFA500' }]}>🤔 Analyzing...</Text>
+                      </View>
+                    )}
                   </View>
                   <Text style={[styles.reportDescription, { color: colors.text }]} numberOfLines={2}>
-                    {report.description}
+                    {report.ai_summary || report.description}
                   </Text>
+                  {report.ai_analysis_status === 'completed' && report.ai_confidence && (
+                    <Text style={[styles.aiConfidence, { color: colors.textSecondary }]}>
+                      ✓ AI Confidence: {(report.ai_confidence * 100).toFixed(0)}% | Cleanup: {report.ai_estimated_cleanup_time_minutes || '60'} min
+                    </Text>
+                  )}
                   {report.user && (
                     <View style={styles.reportUserRow}>
                       <Ionicons name="person-circle-outline" size={14} color={colors.textSecondary} />
@@ -768,6 +782,20 @@ const styles = StyleSheet.create({
   },
   severityText: {
     fontSize: 12,
+  },
+  analyzingBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  analyzingText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  aiConfidence: {
+    fontSize: 11,
+    marginTop: 6,
+    fontStyle: 'italic',
   },
   reportDescription: {
     fontSize: 14,

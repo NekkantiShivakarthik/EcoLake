@@ -22,6 +22,7 @@ import { Card } from '@/components/ui/card';
 import { EcoColors } from '@/constants/colors';
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/contexts/theme-context';
+import { useAiAssistant } from '@/hooks/use-ai';
 import { useImagePicker, useLocation, usePhotoUpload } from '@/hooks/use-media';
 import { useNearbyLakes, useSubmitReport, useUserProfile } from '@/hooks/use-supabase';
 
@@ -41,6 +42,7 @@ export default function ReportScreen() {
   const { user } = useAuth();
   const { points } = useUserProfile(user?.id);
   const { showBadgeNotification } = useBadgeNotification();
+  const { generateReportDescription, loading: aiLoading } = useAiAssistant();
   const { location, address, loading: locationLoading, getCurrentLocation, clearLocation } = useLocation();
   const { lakes: nearbyLakes, loading: lakesLoading } = useNearbyLakes(location, 25); // Search lakes within 25km
   const { submitReport, loading: submitting } = useSubmitReport();
@@ -52,6 +54,8 @@ export default function ReportScreen() {
   const [severity, setSeverity] = useState<number>(3);
   const [description, setDescription] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [manualLakeName, setManualLakeName] = useState('');
+  const [showManualEntry, setShowManualEntry] = useState(false);
   
   // Auto-capture location on mount
   React.useEffect(() => {
@@ -130,6 +134,9 @@ export default function ReportScreen() {
     // Use lake's location for the report
     const lat = selectedLake.lat;
     const lng = selectedLake.lng;
+    
+    // Extract city from address if available, or use a default
+    const cityName = address?.split(',').pop()?.trim() || 'Bangalore';
 
     const result = await submitReport({
       user_id: user.id,
@@ -140,17 +147,19 @@ export default function ReportScreen() {
       description: description.trim(),
       lat,
       lng,
+      city: cityName,
       photo_urls: photoUrls,
     });
 
     if (result.success) {
       const pointsEarned = result.pointsEarned || 0;
       const newBadges = result.newBadges || [];
+      const hasPhotos = photoUrls.length > 0;
       
-      // Show success alert
+      // Show success alert with AI status
       Alert.alert(
         '🎉 Report Submitted!', 
-        `Thank you for helping keep our lakes clean!\n\n⭐ You earned ${pointsEarned} points!${newBadges.length > 0 ? `\n\n🏆 New badge${newBadges.length > 1 ? 's' : ''} earned!` : ''}`, 
+        `Thank you for helping keep our lakes clean!\n\n⭐ You earned ${pointsEarned} points!${newBadges.length > 0 ? `\n\n🏆 New badge${newBadges.length > 1 ? 's' : ''} earned!` : ''}${hasPhotos ? '\n\n🤖 AI is analyzing your photo now and will auto-verify + assign a volunteer' : ''}`, 
         [
           {
             text: 'Awesome!',
@@ -177,6 +186,23 @@ export default function ReportScreen() {
     } else {
       Alert.alert('Error', result.error || 'Failed to submit report. Please try again.');
     }
+  };
+
+  const handleAiAssist = async () => {
+    const result = await generateReportDescription({
+      rawDescription: description,
+      lakeName: selectedLake?.name,
+      category: selectedCategory || undefined,
+      severity,
+      locationHint: address || undefined,
+    });
+
+    if (result.success) {
+      setDescription(result.reply);
+      return;
+    }
+
+    Alert.alert('AI Assist Failed', result.error || 'Could not generate description right now.');
   };
 
   const isSubmitting = submitting || uploading;
@@ -308,13 +334,66 @@ export default function ReportScreen() {
                 <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Searching for nearby lakes...</Text>
               </View>
             ) : !hasNearbyLakes ? (
-              <Card variant="outlined" style={styles.noLakesCard}>
-                <Text style={styles.noLakesIcon}>🔍</Text>
-                <Text style={[styles.noLakesTitle, { color: colors.text }]}>No lakes found nearby</Text>
-                <Text style={[styles.noLakesText, { color: colors.textSecondary }]}>
-                  No lakes found within 25km of your location. Try moving closer to a lake or water body.
-                </Text>
-              </Card>
+              <>
+                <Card variant="outlined" style={styles.noLakesCard}>
+                  <Text style={styles.noLakesIcon}>🔍</Text>
+                  <Text style={[styles.noLakesTitle, { color: colors.text }]}>No lakes found nearby</Text>
+                  <Text style={[styles.noLakesText, { color: colors.textSecondary }]}>
+                    Unable to load nearby lakes (Overpass API temporarily unavailable). You can enter a lake name manually.
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.showAllButton}
+                    onPress={() => setShowManualEntry(true)}
+                  >
+                    <Text style={styles.showAllButtonText}>Add Lake Manually</Text>
+                  </TouchableOpacity>
+                </Card>
+                
+                {showManualEntry && (
+                  <View style={styles.manualEntryContainer}>
+                    <Card variant="outlined" style={styles.manualEntryCard}>
+                      <Text style={[styles.manualEntryLabel, { color: colors.text }]}>Lake Name *</Text>
+                      <TextInput
+                        style={[styles.manualEntryInput, { color: colors.text, borderColor: colors.border, backgroundColor: colors.surface }]}
+                        placeholder="Enter lake name..."
+                        placeholderTextColor={colors.textTertiary}
+                        value={manualLakeName}
+                        onChangeText={setManualLakeName}
+                        autoCapitalize="words"
+                      />
+                      <View style={styles.manualEntryButtons}>
+                        <TouchableOpacity
+                          style={[styles.manualEntryButton, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                          onPress={() => {
+                            setShowManualEntry(false);
+                            setManualLakeName('');
+                          }}
+                        >
+                          <Text style={[styles.manualEntryButtonText, { color: colors.textSecondary }]}>Cancel</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={[styles.manualEntryButton, manualLakeName.trim() ? { backgroundColor: colors.primary } : { backgroundColor: colors.textTertiary }]}
+                          onPress={() => {
+                            if (manualLakeName.trim() && location) {
+                              setSelectedLake({
+                                id: `manual-${Date.now()}`,
+                                name: manualLakeName.trim(),
+                                lat: location.latitude,
+                                lng: location.longitude,
+                              });
+                              setShowManualEntry(false);
+                              setManualLakeName('');
+                            }
+                          }}
+                          disabled={!manualLakeName.trim()}
+                        >
+                          <Text style={[styles.manualEntryButtonText, manualLakeName.trim() ? { color: '#fff' } : { color: colors.text }]}>Add</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </Card>
+                  </View>
+                )}
+              </>
             ) : !hasFilteredLakes ? (
               <Card variant="outlined" style={styles.noLakesCard}>
                 <Text style={styles.noLakesIcon}>🔍</Text>
@@ -439,7 +518,24 @@ export default function ReportScreen() {
 
           {/* Description */}
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Description *</Text>
+            <View style={styles.descriptionHeader}>
+              <Text style={[styles.sectionTitle, styles.descriptionTitle, { color: colors.text }]}>Description *</Text>
+              <TouchableOpacity
+                style={[
+                  styles.aiAssistButton,
+                  aiLoading && styles.aiAssistButtonDisabled,
+                ]}
+                onPress={handleAiAssist}
+                disabled={aiLoading}
+              >
+                {aiLoading ? (
+                  <ActivityIndicator size="small" color={EcoColors.white} />
+                ) : (
+                  <Text style={styles.aiAssistButtonText}>AI Assist</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+            <Text style={[styles.aiHintText, { color: colors.textSecondary }]}>Write rough notes first, then tap AI Assist to polish your report.</Text>
             <Card variant="outlined" style={styles.descriptionCard}>
               <TextInput
                 style={[styles.descriptionInput, { color: colors.text }]}
@@ -872,6 +968,40 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     padding: 0,
   },
+  descriptionHeader: {
+    paddingHorizontal: 20,
+    marginBottom: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  descriptionTitle: {
+    marginBottom: 0,
+    paddingHorizontal: 0,
+  },
+  aiAssistButton: {
+    backgroundColor: EcoColors.primary,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
+    minWidth: 92,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  aiAssistButtonDisabled: {
+    opacity: 0.7,
+  },
+  aiAssistButtonText: {
+    color: EcoColors.white,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  aiHintText: {
+    paddingHorizontal: 20,
+    marginBottom: 10,
+    fontSize: 12,
+    lineHeight: 16,
+  },
   descriptionInput: {
     fontSize: 15,
     padding: 16,
@@ -971,5 +1101,41 @@ const styles = StyleSheet.create({
   },
   bottomSpacing: {
     height: 100,
+  },
+  manualEntryContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 12,
+  },
+  manualEntryCard: {
+    padding: 16,
+    gap: 12,
+  },
+  manualEntryLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  manualEntryInput: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 15,
+  },
+  manualEntryButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+  },
+  manualEntryButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  manualEntryButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

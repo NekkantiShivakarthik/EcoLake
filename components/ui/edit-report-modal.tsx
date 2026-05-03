@@ -43,6 +43,9 @@ interface EditReportModalProps {
     description: string;
   }) => Promise<{ success: boolean; error?: string }>;
   loading?: boolean;
+  title?: string;
+  successMessage?: string;
+  saveLabel?: string;
 }
 
 export function EditReportModal({
@@ -51,6 +54,9 @@ export function EditReportModal({
   onClose,
   onSave,
   loading = false,
+  title = 'Edit Report',
+  successMessage = 'Report updated successfully!',
+  saveLabel = 'Save Changes',
 }: EditReportModalProps) {
   const { colors } = useTheme();
   const [category, setCategory] = useState<Category>('other');
@@ -81,7 +87,7 @@ export function EditReportModal({
     setSaving(false);
 
     if (result.success) {
-      Alert.alert('Success', 'Report updated successfully!', [
+      Alert.alert('Success', successMessage, [
         { text: 'OK', onPress: onClose },
       ]);
     } else {
@@ -111,7 +117,7 @@ export function EditReportModal({
             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
               <Ionicons name="close" size={28} color={EcoColors.white} />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Edit Report</Text>
+            <Text style={styles.headerTitle}>{title}</Text>
             <View style={styles.placeholder} />
           </View>
         </LinearGradient>
@@ -296,7 +302,7 @@ export function EditReportModal({
                   ) : (
                     <>
                       <Ionicons name="checkmark-circle" size={20} color={EcoColors.white} />
-                      <Text style={styles.saveButtonText}>Save Changes</Text>
+                      <Text style={styles.saveButtonText}>{saveLabel}</Text>
                     </>
                   )}
                 </LinearGradient>

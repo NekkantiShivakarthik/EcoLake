@@ -23,7 +23,7 @@ import { StatCard } from '@/components/ui/stat-card';
 import { EcoColors } from '@/constants/colors';
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/contexts/theme-context';
-import { useDeleteReport, useReports, useStats, useUpdateReport, useUserProfile } from '@/hooks/use-supabase';
+import { useAIDashboardSummary, useDeleteReport, useReports, useStats, useUpdateReport, useUserProfile } from '@/hooks/use-supabase';
 import { Report } from '@/types/database';
 
 export default function HomeScreen() {
@@ -34,6 +34,7 @@ export default function HomeScreen() {
   const { user, points } = useUserProfile(authUser?.id);
   const { updateReport } = useUpdateReport();
   const { deleteReport } = useDeleteReport();
+  const { insights, loading: insightsLoading } = useAIDashboardSummary(7);
 
   const [refreshing, setRefreshing] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -157,12 +158,36 @@ export default function HomeScreen() {
                   </TouchableOpacity>
                 </Link>
                 <Link href="/(tabs)/volunteer" asChild>
-                  <TouchableOpacity style={[styles.heroButton, styles.heroButtonSecondary]}>
+                  <TouchableOpacity style={StyleSheet.flatten([styles.heroButton, styles.heroButtonSecondary])}>
                     <Ionicons name="hand-left" size={18} color={EcoColors.white} />
                     <Text style={[styles.heroButtonText, styles.heroButtonTextSecondary]}>Volunteer</Text>
                   </TouchableOpacity>
                 </Link>
               </View>
+            </View>
+          </LinearGradient>
+        </Animated.View>
+
+        {/* Quick Report CTA */}
+        <Animated.View entering={FadeInDown.delay(125).springify()} style={styles.quickReportCard}>
+          <LinearGradient
+            colors={[EcoColors.primary + '15', EcoColors.info + '15']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.quickReportGradient}
+          >
+            <View style={styles.quickReportContent}>
+              <View style={styles.quickReportTextBlock}>
+                <Text style={[styles.quickReportTitle, { color: colors.text }]}>⚡ Quick AI Check</Text>
+                <Text style={[styles.quickReportSubtitle, { color: colors.textSecondary }]}>
+                  Upload a photo to detect waste type and severity in seconds.
+                </Text>
+              </View>
+              <Link href="/(tabs)/quick-report" asChild>
+                <TouchableOpacity style={[styles.quickReportButton, { backgroundColor: colors.primary }]}>
+                  <Text style={styles.quickReportButtonText}>Try it</Text>
+                </TouchableOpacity>
+              </Link>
             </View>
           </LinearGradient>
         </Animated.View>
@@ -235,6 +260,48 @@ export default function HomeScreen() {
             />
           </View>
         </Animated.View>
+
+        {/* AI Insights Section */}
+        {insights && (
+          <Animated.View entering={FadeInDown.delay(250).springify()} style={styles.section}>
+            <LinearGradient
+              colors={[colors.primary + '20', colors.accent + '20']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.aiCard}
+            >
+              <View style={styles.aiHeader}>
+                <Text style={[styles.aiTitle, { color: colors.text }]}>🤖 AI Ops Pulse</Text>
+                {insightsLoading && (
+                  <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Generating...</Text>
+                )}
+              </View>
+              <Text style={[styles.aiSummary, { color: colors.text }]}>
+                {insights.summary}
+              </Text>
+              {insights.critical_alerts && insights.critical_alerts.length > 0 && (
+                <View style={styles.alertsContainer}>
+                  <Text style={[styles.alertsTitle, { color: colors.error }]}>⚠️ Critical Alerts</Text>
+                  {insights.critical_alerts.slice(0, 2).map((alert: string, idx: number) => (
+                    <Text key={idx} style={[styles.alertItem, { color: colors.text }]}>
+                      • {alert}
+                    </Text>
+                  ))}
+                </View>
+              )}
+              {insights.recommended_actions && insights.recommended_actions.length > 0 && (
+                <View style={styles.actionsContainer}>
+                  <Text style={[styles.actionsTitle, { color: colors.primary }]}>💡 Next Steps</Text>
+                  {insights.recommended_actions.slice(0, 2).map((action: string, idx: number) => (
+                    <Text key={idx} style={[styles.actionItem, { color: colors.text }]}>
+                      • {action}
+                    </Text>
+                  ))}
+                </View>
+              )}
+            </LinearGradient>
+          </Animated.View>
+        )}
 
         {/* Recent Reports Section */}
         <View style={styles.section}>
@@ -464,6 +531,44 @@ const styles = StyleSheet.create({
     fontSize: 64,
     marginLeft: 8,
   },
+  quickReportCard: {
+    marginHorizontal: 20,
+    marginBottom: 18,
+  },
+  quickReportGradient: {
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: EcoColors.primary + '20',
+  },
+  quickReportContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  quickReportTextBlock: {
+    flex: 1,
+  },
+  quickReportTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  quickReportSubtitle: {
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  quickReportButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  quickReportButtonText: {
+    color: EcoColors.white,
+    fontWeight: '700',
+    fontSize: 12,
+  },
   quickActions: {
     flexDirection: 'row',
     paddingHorizontal: 20,
@@ -550,6 +655,60 @@ const styles = StyleSheet.create({
   },
   skeletonContainer: {
     paddingHorizontal: 20,
+  },
+  aiCard: {
+    marginHorizontal: 20,
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: EcoColors.primary + '30',
+  },
+  aiHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  aiTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  aiSummary: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 12,
+    fontWeight: '500',
+  },
+  alertsContainer: {
+    backgroundColor: '#FF4444' + '15',
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 12,
+  },
+  alertsTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  alertItem: {
+    fontSize: 12,
+    lineHeight: 16,
+    marginBottom: 4,
+  },
+  actionsContainer: {
+    backgroundColor: EcoColors.primary + '15',
+    padding: 12,
+    borderRadius: 10,
+  },
+  actionsTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  actionItem: {
+    fontSize: 12,
+    lineHeight: 16,
+    marginBottom: 4,
   },
   bottomSpacing: {
     height: 100,

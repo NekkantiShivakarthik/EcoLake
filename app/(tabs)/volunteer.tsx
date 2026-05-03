@@ -582,7 +582,10 @@ function ReportCard({ report, onPress, buttonTitle }: ReportCardProps) {
     <Card style={styles.reportCard}>
       <View style={styles.reportHeader}>
         <StatusChip status={report.status as any} />
-        <Text style={[styles.pointsBadge, { color: colors.success }]}>+{(report.severity || 1) * 10} pts</Text>
+        {(report as any).ai_analysis_status === 'processing' && (
+          <Text style={[styles.analyzingStatus, { color: '#FFA500' }]}>🤔 Analyzing...</Text>
+        )}
+        <Text style={[styles.pointsBadge, { color: colors.success }]}>+{((report as any).ai_severity_level || report.severity || 1) * 10} pts</Text>
       </View>
 
       {report.photos && report.photos.length > 0 && (
@@ -590,12 +593,31 @@ function ReportCard({ report, onPress, buttonTitle }: ReportCardProps) {
       )}
 
       <Text style={[styles.reportDescription, { color: colors.textSecondary }]} numberOfLines={2}>
-        {report.description}
+        {(report as any).ai_summary || report.description}
       </Text>
 
       <View style={styles.reportInfo}>
-        <Text style={[styles.reportCategory, { color: colors.textSecondary }]}>📍 {report.lake_name || 'Unknown Location'}</Text>
-        <Text style={styles.reportSeverity}>{'⭐'.repeat(report.severity || 1)}</Text>
+        <Text style={[styles.reportCategory, { color: colors.textSecondary }]}>
+          📍 {report.lake_name || 'Unknown Location'}
+        </Text>
+        {(report as any).ai_waste_type && (
+          <Text style={[styles.aiWasteType, { color: colors.primary }]}>
+            🤖 {(report as any).ai_waste_type.replace(/_/g, ' ')}
+          </Text>
+        )}
+        <View style={styles.reportMeta}>
+          <Text style={styles.reportSeverity}>{'⭐'.repeat((report as any).ai_severity_level || report.severity || 1)}</Text>
+          {(report as any).ai_estimated_cleanup_time_minutes && (
+            <Text style={[styles.cleanupTime, { color: colors.textSecondary }]}>
+              ⏱️ {(report as any).ai_estimated_cleanup_time_minutes}min
+            </Text>
+          )}
+          {(report as any).ai_confidence && (
+            <Text style={[styles.confidence, { color: colors.primary }]}>
+              ✓ {((report as any).ai_confidence * 100).toFixed(0)}%
+            </Text>
+          )}
+        </View>
       </View>
 
       <Button title={buttonTitle} onPress={onPress} size="sm" />
@@ -698,6 +720,28 @@ const styles = StyleSheet.create({
   },
   reportSeverity: {
     fontSize: 14,
+  },
+  analyzingStatus: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  aiWasteType: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  reportMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 6,
+  },
+  cleanupTime: {
+    fontSize: 11,
+  },
+  confidence: {
+    fontSize: 10,
+    fontWeight: '500',
   },
   emptyText: {
     fontSize: 16,

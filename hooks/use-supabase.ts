@@ -152,12 +152,19 @@ async function searchNearbyLakes(
       body: query,
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': 'EcoLake-App/1.0',
       },
     });
 
     if (!response.ok) {
-      console.error('Overpass API error:', response.status, response.statusText);
-      throw new Error(`Failed to fetch nearby lakes: ${response.status}`);
+      // Log warning for non-200 responses but don't throw - gracefully degrade to empty results
+      if (response.status !== 406) {
+        console.warn(`Overpass API returned ${response.status}: ${response.statusText}. Using empty lake list.`);
+      } else {
+        console.warn('Overpass API rejected request (406). Using empty lake list. This may be a temporary service issue.');
+      }
+      // Return empty array instead of throwing, so the app doesn't crash
+      return [];
     }
 
     const data = await response.json();
@@ -859,6 +866,52 @@ export function useSubmitReport() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const getErrorMessage = (value: unknown): string => {
+    if (!value) return 'Failed to submit report';
+
+    if (value instanceof Error && value.message) {
+      return value.message;
+    }
+
+    if (typeof value === 'string' && value.trim()) {
+      return value;
+    }
+
+    if (typeof value === 'object') {
+      const maybeError = value as {
+        message?: unknown;
+        details?: unknown;
+        hint?: unknown;
+      };
+
+      if (typeof maybeError.message === 'string' && maybeError.message.trim()) {
+        return maybeError.message;
+      }
+
+      if (typeof maybeError.details === 'string' && maybeError.details.trim()) {
+        return maybeError.details;
+      }
+
+      if (typeof maybeError.hint === 'string' && maybeError.hint.trim()) {
+        return maybeError.hint;
+      }
+    }
+
+    return 'Failed to submit report';
+  };
+
+  const isSchemaMismatchError = (value: { code?: string | null; message?: string | null; details?: string | null; hint?: string | null }) => {
+    const normalized = `${value.message || ''} ${value.details || ''} ${value.hint || ''}`.toLowerCase();
+    return (
+      value.code === 'PGRST204' ||
+      value.code === '42703' ||
+      (normalized.includes('column') &&
+        (normalized.includes('does not exist') ||
+          normalized.includes('schema cache') ||
+          normalized.includes('could not find')))
+    );
+  };
+
   const submitReport = async (data: {
     user_id?: string;
     lake_id?: string | null;
@@ -868,6 +921,7 @@ export function useSubmitReport() {
     description: string;
     lat: number;
     lng: number;
+    city?: string;
     photo_urls?: string[];
   }) => {
     setLoading(true);
@@ -879,7 +933,11 @@ export function useSubmitReport() {
         throw new Error('You must be logged in to submit a report');
       }
 
-      const { error: insertError } = await supabase.from('reports').insert({
+      // Determine AI analysis status based on photos
+      const hasPhotos = (data.photo_urls && data.photo_urls.length > 0);
+      const aiAnalysisStatus = hasPhotos ? 'pending' : 'completed';
+
+      const baseInsert = {
         user_id: data.user_id,
         lake_id: data.lake_id || null,
         lake_name: data.lake_name || 'Unknown Lake',
@@ -889,11 +947,38 @@ export function useSubmitReport() {
         lat: data.lat,
         lng: data.lng,
         photos: data.photo_urls || [],
-        status: 'submitted',
+        status: hasPhotos ? 'submitted' : 'verified', // Auto-verify if no photos for AI analysis
         priority_score: data.severity * 20,
-      } as any);
+      } as any;
 
-      if (insertError) throw insertError;
+      const insertPayload = {
+        ...baseInsert,
+        city: data.city || 'Unknown',
+        ai_analysis_status: aiAnalysisStatus,
+      } as any;
+
+      let { data: insertedReport, error: insertError } = await supabase
+        .from('reports')
+        .insert(insertPayload)
+        .select()
+        .single();
+
+      if (insertError) {
+        if (isSchemaMismatchError(insertError as any)) {
+          const retry = await supabase
+            .from('reports')
+            .insert(baseInsert)
+            .select()
+            .single();
+
+          if (retry.error) throw retry.error;
+          insertedReport = retry.data as any;
+        } else {
+          throw insertError;
+        }
+      }
+
+      const reportId = (insertedReport as any)?.id;
 
       // Award points for submitting a report (10 points base + severity bonus)
       const pointsEarned = 10 + (data.severity * 2);
@@ -924,11 +1009,30 @@ export function useSubmitReport() {
       // Check for new badges
       const newBadges = await checkAndAwardBadges(data.user_id);
 
-      return { success: true, pointsEarned, newBadges };
+      // Trigger AI analysis asynchronously if photos exist
+      if (hasPhotos && reportId) {
+        console.log('Triggering AI vision analysis for report:', reportId);
+        // Fire and forget - don't wait for response
+        fetch(
+          `${globalThis.location?.origin || 'http://localhost:3000'}/api/analyze-report`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reportId }),
+          }
+        ).catch(err => console.error('Failed to trigger AI analysis:', err));
+
+        // Alternative: Call Edge Function directly via Supabase
+        supabase.functions.invoke('analyze-report-vision', {
+          body: { reportId },
+        }).catch(err => console.error('Edge Function error:', err));
+      }
+
+      return { success: true, pointsEarned, newBadges, reportId };
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to submit report';
+      const message = getErrorMessage(err);
       setError(message);
-      return { success: false, error: message, newBadges: [] };
+      return { success: false, error: message, newBadges: [], reportId: undefined };
     } finally {
       setLoading(false);
     }
@@ -1225,4 +1329,78 @@ export function useRedeemReward() {
   };
 
   return { redeemReward, loading, error };
+}
+
+// Fetch AI Dashboard Insights
+export function useAIDashboardSummary(timeWindowDays: number = 7) {
+  const [insights, setInsights] = useState<any>(null);
+  const [metrics, setMetrics] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchDashboardInsights = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      console.log(`Fetching AI dashboard insights for ${timeWindowDays} days`);
+
+      // Call Edge Function to generate AI insights
+      const { data, error: fnError } = await supabase.functions.invoke('dashboard-ai-summary', {
+        body: { timeWindowDays },
+      });
+
+      if (fnError) {
+        console.error('Error calling dashboard-ai-summary function:', fnError);
+        throw fnError;
+      }
+
+      if (data?.data) {
+        setInsights(data.data.insights);
+        setMetrics(data.data.metrics);
+      } else {
+        // Fallback if function returns error
+        console.warn('Dashboard insights generation had issues, using fallback');
+        setInsights({
+          summary: 'Environmental monitoring active. Check individual reports for details.',
+          critical_alerts: [],
+          recommended_actions: ['Review recent reports', 'Verify volunteer assignments'],
+        });
+      }
+    } catch (err) {
+      console.error('Failed to fetch dashboard insights:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch insights');
+      // Set fallback insights on error
+      setInsights({
+        summary: 'Dashboard temporarily unavailable. Monitoring continues.',
+        critical_alerts: [],
+        recommended_actions: [],
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [timeWindowDays]);
+
+  useEffect(() => {
+    fetchDashboardInsights();
+
+    // Refresh every 24 hours or when reports change significantly
+    const interval = setInterval(fetchDashboardInsights, 24 * 60 * 60 * 1000);
+
+    // Set up real-time subscription to refresh on new reports
+    const subscription = supabase
+      .channel('dashboard_changes')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'reports' }, () => {
+        console.log('New report detected, refreshing dashboard insights');
+        fetchDashboardInsights();
+      })
+      .subscribe();
+
+    return () => {
+      clearInterval(interval);
+      subscription.unsubscribe();
+    };
+  }, [fetchDashboardInsights]);
+
+  return { insights, metrics, loading, error, refetch: fetchDashboardInsights };
 }

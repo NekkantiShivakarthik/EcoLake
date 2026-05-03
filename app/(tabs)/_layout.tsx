@@ -83,6 +83,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="quick-report"
+        options={{
+          title: 'Quick',
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon="⚡" label="Quick" focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="volunteer"
         options={{
           title: 'Volunteer',
