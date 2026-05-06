@@ -57,6 +57,54 @@ export async function openAIChatCompletion(
 }
 
 /**
+ * Call Replicate Vision API for free tier image analysis
+ */
+async function replicateVision(imageUrl: string, prompt: string): Promise<string> {
+  const apiKey = Deno.env.get('AI_VISION_API_KEY');
+  
+  // Use LLaVA model on Replicate (free tier available)
+  const replicateUrl = 'https://api.replicate.com/v1/predictions';
+  
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  
+  if (apiKey) {
+    headers['Authorization'] = `Token ${apiKey}`;
+  }
+  
+  const response = await fetch(replicateUrl, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      version: 'e5694dd6c5c0ddfb67850474cffe14fdf378b20e0a8035b43c4b2d5e5ceb3cb5', // LLaVA model
+      input: {
+        image: imageUrl,
+        prompt: prompt,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Replicate Vision API error: ${response.status} ${error}`);
+  }
+
+  const data = await response.json() as { output?: string | string[] };
+  const output = data.output;
+  
+  if (typeof output === 'string') {
+    return output;
+  }
+  
+  if (Array.isArray(output)) {
+    return output.join('\n');
+  }
+  
+  throw new Error('Invalid response from Replicate Vision API');
+}
+
+/**
  * Call OpenAI Vision API to analyze image
  */
 export async function openAIVision(
@@ -67,6 +115,13 @@ export async function openAIVision(
     responseFormat?: 'json_object' | 'text';
   }
 ): Promise<string> {
+  const visionProvider = Deno.env.get('AI_VISION_PROVIDER') || 'openai';
+  
+  // Use Replicate for free tier vision if configured
+  if (visionProvider === 'replicate') {
+    return replicateVision(imageUrl, prompt);
+  }
+  
   const response = await fetch(API_URL, {
     method: 'POST',
     headers: {
